@@ -1,0 +1,12 @@
+[tool.black]
+line-length = 120
+target-version = ['py311']
+skip-string-normalization = true
+skip-magic-trailing-comma = true
+include = '\.pyi?$'
+exclude = '''
+/(
+    \._|\.git|\.hg|\.mypy_cache|\.tox|\.venv|_build|buck-out|build|dist
+)/
+'''
+--skip-string-normalization
