@@ -6,52 +6,52 @@ from AppCore.common.texts.messages import (
     USUARIO_INATIVO_OU_SUSPENSO, USUARIO_SEM_PERFIL_CADASTRADO, PERFIL_INATIVO_OU_SUSPENSO
 )
 
-from Users.users.choices import USER_STATUS_ATIVO, PROFILE_STATUS_ATIVO, PROFILE_TYPE_CHOICES, PROFILE_TYPE_ADMIN
+from Users.users.choices import USUARIO_STATUS_ATIVO, PERFIL_STATUS_ATIVO, PERFIL_TIPO_OPCOES, PERFIL_TIPO_ADMIN
 
 
-PROFILE_TYPE_CHOICES_NO_ADMIN = tuple(
-    choice for choice in PROFILE_TYPE_CHOICES if choice[0] != PROFILE_TYPE_ADMIN
+PERFIL_TIPO_OPCOES_SEM_ADMIN = tuple(
+    opcao for opcao in PERFIL_TIPO_OPCOES if opcao[0] != PERFIL_TIPO_ADMIN
 )
 
-User = get_user_model()
+Usuario = get_user_model()
 
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    type = serializers.ChoiceField(
-        choices=PROFILE_TYPE_CHOICES_NO_ADMIN,
+class TokenPersonalizadoSerializer(TokenObtainPairSerializer):
+    tipo = serializers.ChoiceField(
+        choices=PERFIL_TIPO_OPCOES_SEM_ADMIN,
         required=False,
         allow_blank=True,
         default='user'
     )
     
     def validate(self, attrs):
-        login_type = attrs.pop('type', 'user')
+        tipo_login = attrs.pop('tipo', 'user')
         
         data = super().validate(attrs)
         
-        user = self.user
+        usuario = self.user
         
-        if user.status != USER_STATUS_ATIVO:
+        if usuario.status != USUARIO_STATUS_ATIVO:
             raise serializers.ValidationError({
                 'detail': USUARIO_INATIVO_OU_SUSPENSO
             })
         
-        profile = user.profiles.filter(type=login_type).first()
+        perfil = usuario.perfis.filter(tipo=tipo_login).first()
         
-        if not profile:
+        if not perfil:
             raise serializers.ValidationError({
-                'detail': USUARIO_SEM_PERFIL_CADASTRADO % login_type
+                'detail': USUARIO_SEM_PERFIL_CADASTRADO % tipo_login
             })
         
-        if profile.status != PROFILE_STATUS_ATIVO:
+        if perfil.status != PERFIL_STATUS_ATIVO:
             raise serializers.ValidationError({
                 'detail': PERFIL_INATIVO_OU_SUSPENSO
             })
         
-        data['profile'] = {
-            'id': profile.id,
-            'type': profile.type,
-            'type_display': profile.get_type_display()
+        data['perfil'] = {
+            'id': perfil.id,
+            'tipo': perfil.tipo,
+            'exibicao_tipo': perfil.get_tipo_display()
         }
         
         return data

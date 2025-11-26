@@ -6,90 +6,90 @@ from AppCore.common.util.util import send_simple_email
 from AppCore.common.texts.emails import EMAIL_CREATE_ACCOUNT, EMAIL_PASSWORD_RESET_ACCOUNT
 
 from BaseDRFApp import settings
-from Users.users.models import User
-from .models import EmailAccountCode
-from .rules import AccountRule
-from .helpers import AccountHelper
+from Users.users.models import Usuario
+from .models import CodigoEmailConta
+from .rules import ContaRule
+from .helpers import ContaHelper
 
 
-class AccountBusiness(ModelInstanceBusiness):
+class ContaBusiness(ModelInstanceBusiness):
     @property
-    def user(self):
+    def usuario(self):
         return self.object_instance
     
-    def _get_code(self):
+    def _obter_codigo(self):
         try:
-            length_code = 6
+            tamanho_codigo = 6
             
-            return ''.join(random.choices(string.ascii_lowercase, k=length_code))
+            return ''.join(random.choices(string.ascii_lowercase, k=tamanho_codigo))
         except Exception as e:
             raise e
 
-    def get_code(self, email, type_profile):
+    def obter_codigo(self, email, tipo_perfil):
         try:
-            account_rules = AccountRule()
+            regras_conta = ContaRule()
 
-            account_rules.user_profile_dont_exists(email, type_profile)
+            regras_conta.perfil_usuario_nao_existe(email, tipo_perfil)
 
-            account_helper = AccountHelper()
+            auxiliar_conta = ContaHelper()
             
-            account_helper.del_codes_expired(email)
+            auxiliar_conta.deletar_codigos_expirados(email)
 
-            random_code = self._get_code()
+            codigo_aleatorio = self._obter_codigo()
             
-            return EmailAccountCode.objects.create(
+            return CodigoEmailConta.objects.create(
                 email=email,
-                code=random_code
+                codigo=codigo_aleatorio
             )
         except self.exceptions_handled as e:
             raise e
         except Exception as e:
             raise SystemErrorException('Não foi possível gerar o código de verificação.')
         
-    def send_verification_email(self, email, email_account_code):
+    def enviar_email_verificacao(self, email, codigo_email_conta):
         try:
             send_simple_email(
                 "Recuperação de senha",
-                f"Código de recuperação de senha: {email_account_code.code}",
+                f"Código de recuperação de senha: {codigo_email_conta.codigo}",
                 settings.DEFAULT_FROM_EMAIL,
                 [email],
-                EMAIL_CREATE_ACCOUNT % email_account_code.code
+                EMAIL_CREATE_ACCOUNT % codigo_email_conta.codigo
             )
         except self.exceptions_handled as e:
             raise e
         except Exception as e:
             raise SystemErrorException('Não foi possível enviar o email de verificação.')
         
-    def validate_code(self, code, email=None):
+    def validar_codigo(self, codigo, email=None):
         if not email:
-            email = self.user.email
+            email = self.usuario.email
 
         try:
-            email_account_code = EmailAccountCode.objects.get(
-                email=email, code=code
+            codigo_email_conta = CodigoEmailConta.objects.get(
+                email=email, codigo=codigo
             )
 
-            email_account_code.is_validated = True
-            email_account_code.save()
+            codigo_email_conta.esta_validado = True
+            codigo_email_conta.save()
         except self.exceptions_handled as e:
             raise e
         except Exception as e:
             raise SystemErrorException('Código inválido.')
         
-    def create_user_account(self, email, code, name, password, phone=None, birth_date=None, type_profile=None, bio=None):
+    def criar_conta_usuario(self, email, codigo, nome, senha, telefone=None, data_nascimento=None, tipo_perfil=None, bio=None):
         try:
-            account_helper = AccountHelper()
+            auxiliar_conta = ContaHelper()
             
-            account_helper.validate_valid_code(email, code)
+            auxiliar_conta.validar_codigo_valido(email, codigo)
             
-            User.objects.create_user(
+            Usuario.objects.criar_usuario(
                 email=email,
-                name=name,
-                password=password,
-                phone=phone,
-                birth_date=birth_date,
-                profiles=[{
-                    'type': type_profile,
+                nome=nome,
+                senha=senha,
+                telefone=telefone,
+                data_nascimento=data_nascimento,
+                perfis=[{
+                    'tipo': tipo_perfil,
                     'bio': bio,
                 }]
             )
@@ -98,29 +98,29 @@ class AccountBusiness(ModelInstanceBusiness):
         except Exception as e:
             raise SystemErrorException('Não foi possível criar a conta do usuário.')
     
-    def get_code_reset_password(self):
+    def obter_codigo_redefinicao_senha(self):
         try:
-            self.user.account_helper.del_codes_expired()
+            self.usuario.conta_helper.deletar_codigos_expirados()
 
-            random_code = self._get_code()
+            codigo_aleatorio = self._obter_codigo()
             
-            return EmailAccountCode.objects.create(
-                email=self.user.email,
-                code=random_code
+            return CodigoEmailConta.objects.create(
+                email=self.usuario.email,
+                codigo=codigo_aleatorio
             )
         except self.exceptions_handled as e:
             raise e
         except Exception as e:
             raise SystemErrorException('Não foi possível gerar o código de redefinição de senha.')
 
-    def send_reset_password_email(self, email_account_code):
+    def enviar_email_redefinicao_senha(self, codigo_email_conta):
         try:
             send_simple_email(
                 "Redefinição de senha - Código de verificação",
-                f"Código de verificação: {email_account_code.code}",
+                f"Código de verificação: {codigo_email_conta.codigo}",
                 settings.DEFAULT_FROM_EMAIL,
-                [self.user.email],
-                EMAIL_PASSWORD_RESET_ACCOUNT % email_account_code.code
+                [self.usuario.email],
+                EMAIL_PASSWORD_RESET_ACCOUNT % codigo_email_conta.codigo
             )
         except self.exceptions_handled as e:
             raise e

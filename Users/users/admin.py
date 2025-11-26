@@ -3,24 +3,24 @@ Admin para o app Users
 """
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Profile
+from .models import Usuario, Perfil
 
 
-class ProfileInline(admin.TabularInline):
-    model = Profile
+class PerfilInline(admin.TabularInline):
+    model = Perfil
     extra = 0
-    fields = ('type', 'bio', 'avatar', 'status')
+    fields = ('tipo', 'bio', 'avatar', 'status')
     can_delete = True
 
 
-@admin.register(User)
-class UserAdmin(BaseUserAdmin):
+@admin.register(Usuario)
+class UsuarioAdmin(BaseUserAdmin):
     list_display = (
         'email',
-        'name',
+        'nome',
         'is_active',
         'is_staff',
-        'email_verified',
+        'email_verificado',
         'status',
         'date_joined'
     )
@@ -29,22 +29,22 @@ class UserAdmin(BaseUserAdmin):
         'is_active',
         'is_staff',
         'is_superuser',
-        'email_verified',
+        'email_verificado',
         'status',
         'date_joined'
     )
     
     search_fields = (
         'email',
-        'name'
+        'nome'
     )
     
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Informações Adicionais', {
             'fields': (
-                'phone',
-                'birth_date',
-                'email_verified',
+                'telefone',
+                'data_nascimento',
+                'email_verificado',
                 'status'
             )
         }),
@@ -56,42 +56,42 @@ class UserAdmin(BaseUserAdmin):
         ('Informações Adicionais', {
             'fields': (
                 'email',
-                'phone',
-                'birth_date',
-                'email_verified',
+                'telefone',
+                'data_nascimento',
+                'email_verificado',
                 'status'
             )
         }),
     )
     
-    inlines = [ProfileInline]
+    inlines = [PerfilInline]
 
 
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
+@admin.register(Perfil)
+class PerfilAdmin(admin.ModelAdmin):
     list_display = (
-        'user',
-        'type',
+        'usuario',
+        'tipo',
         'status',
         'created_at'
     )
     
     list_filter = (
-        'type',
+        'tipo',
         'status',
         'created_at'
     )
     
     search_fields = (
-        'user__email',
-        'name'
+        'usuario__email',
+        'nome'
     )
     
     fieldsets = (
         ('Informações Principais', {
             'fields': (
-                'user',
-                'type',
+                'usuario',
+                'tipo',
                 'status'
             )
         }),

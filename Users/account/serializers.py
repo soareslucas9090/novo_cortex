@@ -1,30 +1,30 @@
 from rest_framework import serializers
 
-from Users.users.choices import PROFILE_TYPE_CHOICES
+from Users.users.choices import PERFIL_TIPO_OPCOES
 import re
 
 
-class CreateAccountSerializer(serializers.Serializer):
+class CriarContaSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
-    type_profile = serializers.CharField(write_only=True)
+    tipo_perfil = serializers.CharField(write_only=True)
     
-    def validate_type_profile(self, value):
-        valid_types = [choice[0] for choice in PROFILE_TYPE_CHOICES]
+    def validate_tipo_perfil(self, value):
+        tipos_validos = [opcao[0] for opcao in PERFIL_TIPO_OPCOES]
 
-        if value not in valid_types:
+        if value not in tipos_validos:
             raise serializers.ValidationError(
-                f"Tipo de perfil inválido. Escolha entre: {', '.join(valid_types)}"
+                f"Tipo de perfil inválido. Escolha entre: {', '.join(tipos_validos)}"
             )
 
         return value
 
 
-class CreateAccountConfirmCodeSerializer(serializers.Serializer):
+class ConfirmarCodigoCriarContaSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
-    code = serializers.CharField(write_only=True)
-    type_profile = serializers.CharField(write_only=True)
+    codigo = serializers.CharField(write_only=True)
+    tipo_perfil = serializers.CharField(write_only=True)
 
-    def validate_code(self, value):
+    def validate_codigo(self, value):
         if len(value) != 6:
             raise serializers.ValidationError(
                 "O código deve possuir 6 dígitos."
@@ -32,29 +32,29 @@ class CreateAccountConfirmCodeSerializer(serializers.Serializer):
 
         return value
 
-    def validate_type_profile(self, value):
-        valid_types = [choice[0] for choice in PROFILE_TYPE_CHOICES]
+    def validate_tipo_perfil(self, value):
+        tipos_validos = [opcao[0] for opcao in PERFIL_TIPO_OPCOES]
 
-        if value not in valid_types:
+        if value not in tipos_validos:
             raise serializers.ValidationError(
-                f"Tipo de perfil inválido. Escolha entre: {', '.join(valid_types)}"
+                f"Tipo de perfil inválido. Escolha entre: {', '.join(tipos_validos)}"
             )
 
         return value
     
     
-class PasswordConfirmCreateAccountSerializer(serializers.Serializer):
+class ConfirmarSenhaCriarContaSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
-    code = serializers.CharField(write_only=True)
-    name = serializers.CharField(max_length=150, write_only=True)
-    password = serializers.CharField(write_only=True)
-    password_confirm = serializers.CharField(write_only=True)
-    phone = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True)
-    birth_date = serializers.DateField(required=False, allow_null=True)
-    type_profile = serializers.CharField(write_only=True)
+    codigo = serializers.CharField(write_only=True)
+    nome = serializers.CharField(max_length=150, write_only=True)
+    senha = serializers.CharField(write_only=True)
+    confirmar_senha = serializers.CharField(write_only=True)
+    telefone = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True)
+    data_nascimento = serializers.DateField(required=False, allow_null=True)
+    tipo_perfil = serializers.CharField(write_only=True)
     bio = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
-    def validate_password(self, value):
+    def validate_senha(self, value):
         if len(value) < 8:
             raise serializers.ValidationError(
             "A senha deve ter pelo menos 8 caracteres."
@@ -82,46 +82,46 @@ class PasswordConfirmCreateAccountSerializer(serializers.Serializer):
         
         return value
     
-    def validate_code(self, value):
+    def validate_codigo(self, value):
         if len(value) != 6:
             raise serializers.ValidationError(
                 "O código deve possuir 6 dígitos."
             )
         return value
     
-    def validate_type_profile(self, value):
-        valid_types = [choice[0] for choice in PROFILE_TYPE_CHOICES]
+    def validate_tipo_perfil(self, value):
+        tipos_validos = [opcao[0] for opcao in PERFIL_TIPO_OPCOES]
 
-        if value not in valid_types:
+        if value not in tipos_validos:
             raise serializers.ValidationError(
-                f"Tipo de perfil inválido. Escolha entre: {', '.join(valid_types)}"
+                f"Tipo de perfil inválido. Escolha entre: {', '.join(tipos_validos)}"
             )
 
         return value
 
     def validate(self, data):
-        if data['password'] != data['password_confirm']:    
+        if data['nova_senha'] != data['confirmar_nova_senha']:    
             raise serializers.ValidationError("As senhas não conferem.")
 
         return data
 
-class ForgotPasswordRequestSerializer(serializers.Serializer):
+class EsqueceuSenhaSolicitarSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
     
-class ForgotPasswordConfirmSerializer(serializers.Serializer):
+class EsqueceuSenhaConfirmarSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
-    code = serializers.CharField(write_only=True)
-    new_password = serializers.CharField(write_only=True)
-    new_password_confirm = serializers.CharField(write_only=True)
+    codigo = serializers.CharField(write_only=True)
+    nova_senha = serializers.CharField(write_only=True)
+    confirmar_nova_senha = serializers.CharField(write_only=True)
 
-    def validate_code(self, value):
+    def validate_codigo(self, value):
         if len(value) != 6:
             raise serializers.ValidationError(
                 "O código deve possuir 6 dígitos."
             )
         return value
 
-    def validate_new_password(self, value):
+    def validate_nova_senha(self, value):
         if len(value) < 8:
             raise serializers.ValidationError(
             "A senha deve ter pelo menos 8 caracteres."

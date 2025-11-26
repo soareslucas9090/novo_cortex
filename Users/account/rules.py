@@ -1,13 +1,13 @@
 from AppCore.core.rules.rules import ModelInstanceRules
 
-from .helpers import AccountHelper
+from .helpers import ContaHelper
 
 
-class AccountRule(ModelInstanceRules):
-    def user_profile_dont_exists(self, email, type_profile):
-        account_helper = AccountHelper()
+class ContaRule(ModelInstanceRules):
+    def perfil_usuario_nao_existe(self, email, tipo_perfil):
+        auxiliar_conta = ContaHelper()
         
-        if account_helper.user_with_email_and_type_profile_exists(email, type_profile):
+        if auxiliar_conta.usuario_com_email_e_tipo_perfil_existe(email, tipo_perfil):
             self.return_exception(
                 'Já existe um usuário com este email para este perfil.'
             )

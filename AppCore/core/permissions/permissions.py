@@ -28,14 +28,14 @@ class IsOwnerOrAdminPermission(BasePermission):
         if request.user.is_superuser:
             return True
         
-        admin_profile = request.user.profiles.filter(
-            type=choices.PROFILE_TYPE_ADMIN,
-            status=choices.PROFILE_STATUS_ATIVO
+        perfil_admin = request.user.perfis.filter(
+            tipo=choices.PERFIL_TIPO_ADMIN,
+            status=choices.PERFIL_STATUS_ATIVO
         ).first()
         
-        if admin_profile:
+        if perfil_admin:
             return True
         
-        owner_user = view.get_owner_user(obj)
+        usuario_proprietario = view.get_owner_user(obj)
         
-        return owner_user == request.user
+        return usuario_proprietario == request.user

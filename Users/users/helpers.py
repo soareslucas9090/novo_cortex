@@ -3,33 +3,33 @@ from django.utils import timezone
 from AppCore.core.helpers.helpers import ModelInstanceHelpers
 
 
-class UserHelpers(ModelInstanceHelpers):
+class UsuarioHelper(ModelInstanceHelpers):
     
-    def add_profile(self, profile_type, bio='', avatar='', status=1):
-        from .models import Profile
+    def adicionar_perfil(self, tipo_perfil, bio='', avatar='', status=1):
+        from .models import Perfil
         
-        existing_profile = self.object_instance.profiles.filter(type=profile_type).first()
-        if existing_profile:
+        perfil_existente = self.object_instance.perfis.filter(tipo=tipo_perfil).first()
+        if perfil_existente:
             return None
         
-        profile = Profile.objects.create(
-            user=self.object_instance,
-            type=profile_type,
+        perfil = Perfil.objects.create(
+            usuario=self.object_instance,
+            tipo=tipo_perfil,
             bio=bio,
             avatar=avatar,
             status=status
         )
-        return profile
+        return perfil
     
-    def get_profiles(self):
+    def obter_perfis(self):
         """Retorna todos os perfis do usuário"""
-        return self.object_instance.profiles.all()
+        return self.object_instance.perfis.all()
     
-    def has_profile_type(self, profile_type):
+    def tem_tipo_perfil(self, tipo_perfil):
         """Verifica se o usuário possui um perfil do tipo especificado"""
-        return self.object_instance.profiles.filter(type=profile_type).exists()
+        return self.object_instance.perfis.filter(tipo=tipo_perfil).exists()
 
-class PasswordResetCodeHelpers(ModelInstanceHelpers):
+class CodigoRedefinicaoSenhaHelper(ModelInstanceHelpers):
     
-    def is_valid(self):
-        return self.expiration_time > timezone.now()
+    def esta_valido(self):
+        return self.tempo_expiracao > timezone.now()

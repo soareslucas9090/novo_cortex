@@ -1,9 +1,9 @@
 from AppCore.core.business.business import ModelInstanceBusiness
 
 
-class UserBusiness(ModelInstanceBusiness):
+class UsuarioBusiness(ModelInstanceBusiness):
     
-    def create_manager_profile(self, bio='', avatar=''):
+    def criar_perfil_gestor(self, bio='', avatar=''):
         """
         Cria um perfil de gestor para o usuário.
         
@@ -12,14 +12,14 @@ class UserBusiness(ModelInstanceBusiness):
             avatar: Avatar do perfil
             
         Returns:
-            Profile: O perfil criado ou None se já existir
+            Perfil: O perfil criado ou None se já existir
         """
-        return self.object_instance.helper.add_profile(
-            profile_type='manager',
+        return self.object_instance.helper.adicionar_perfil(
+            tipo_perfil='manager',
             bio=bio,
             avatar=avatar
         )
     
-    def get_active_profiles(self):
+    def obter_perfis_ativos(self):
         """Retorna apenas os perfis ativos do usuário"""
-        return self.object_instance.profiles.filter(status=1)
+        return self.object_instance.perfis.filter(status=1)

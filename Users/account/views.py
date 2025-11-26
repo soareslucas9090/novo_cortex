@@ -7,64 +7,64 @@ from rest_framework.permissions import AllowAny
 from AppCore.core.exceptions.exceptions import NotFoundException
 from AppCore.basics.views.basic_views import BasicPostAPIView
 from AppCore.basics.mixins.mixins import AllowAnyMixin
-from Users.users.models import User
+from Users.users.models import Usuario
 
 from .serializers import (
-    CreateAccountSerializer, CreateAccountConfirmCodeSerializer,
-    PasswordConfirmCreateAccountSerializer, ForgotPasswordRequestSerializer,
-    ForgotPasswordConfirmSerializer
+    CriarContaSerializer, ConfirmarCodigoCriarContaSerializer,
+    ConfirmarSenhaCriarContaSerializer, EsqueceuSenhaSolicitarSerializer,
+    EsqueceuSenhaConfirmarSerializer
 )
-from .business import AccountBusiness
+from .business import ContaBusiness
 
 
 @extend_schema(tags=["Users.Create account"])
-class CreateAccountPostView(BasicPostAPIView, AllowAnyMixin):
-    serializer_class = CreateAccountSerializer
+class CriarContaPostView(BasicPostAPIView, AllowAnyMixin):
+    serializer_class = CriarContaSerializer
     success_message = "Código de verificação enviado para o email informado."
     
     def do_action_post(self, serializer, request):
         email = serializer.get('email')
-        type_profile = serializer.get('type_profile')
+        tipo_perfil = serializer.get('tipo_perfil')
         
-        account_business = AccountBusiness()
+        conta_business = ContaBusiness()
 
-        email_account_code = account_business.get_code(email, type_profile)
+        codigo_email_conta = conta_business.obter_codigo(email, tipo_perfil)
 
-        account_business.send_verification_email(email, email_account_code)
+        conta_business.enviar_email_verificacao(email, codigo_email_conta)
 
 
 @extend_schema(tags=["Users.Create account"])       
-class CreateAccountConfirmCodePostView(BasicPostAPIView, AllowAnyMixin):
-    serializer_class = CreateAccountConfirmCodeSerializer
+class ConfirmarCodigoCriarContaPostView(BasicPostAPIView, AllowAnyMixin):
+    serializer_class = ConfirmarCodigoCriarContaSerializer
     success_message = "Código verificado. Você pode prosseguir com a criação da conta."
     
     def do_action_post(self, serializer, request):
         email = serializer.get('email')
-        code = serializer.get('code')
+        codigo = serializer.get('codigo')
         
-        account_business = AccountBusiness()
+        conta_business = ContaBusiness()
         
-        account_business.validate_code(email=email, code=code)
+        conta_business.validar_codigo(email=email, codigo=codigo)
 
         
 @extend_schema(tags=["Users.Create account"])
-class ConfirmPasswordAccountPostView(BasicPostAPIView, AllowAnyMixin):
-    serializer_class = PasswordConfirmCreateAccountSerializer
+class ConfirmarSenhaContaPostView(BasicPostAPIView, AllowAnyMixin):
+    serializer_class = ConfirmarSenhaCriarContaSerializer
     success_message = "Usuário criado com sucesso."
     
     def do_action_post(self, serializer, request):
         email = serializer.get('email')
-        code = serializer.get('code')
-        password = serializer.get('password')
-        phone = serializer.get('phone')
-        birth_date = serializer.get('birth_date')
-        type_profile = serializer.get('type_profile')
+        codigo = serializer.get('codigo')
+        senha = serializer.get('senha')
+        telefone = serializer.get('telefone')
+        data_nascimento = serializer.get('data_nascimento')
+        tipo_perfil = serializer.get('tipo_perfil')
         bio = serializer.get('bio')
-        name = serializer.get('name')
+        nome = serializer.get('nome')
         
-        account_business = AccountBusiness()
-        account_business.create_user_account(
-            email, code, name, password, phone, birth_date, type_profile, bio
+        conta_business = ContaBusiness()
+        conta_business.criar_conta_usuario(
+            email, codigo, nome, senha, telefone, data_nascimento, tipo_perfil, bio
         )
         
         return {
@@ -74,18 +74,18 @@ class ConfirmPasswordAccountPostView(BasicPostAPIView, AllowAnyMixin):
 
 
 @extend_schema(tags=["Users.Password reset"])
-class RequestForgotPasswordCodePostView(AllowAnyMixin, BasicPostAPIView):
-    serializer_class = ForgotPasswordRequestSerializer
+class SolicitarCodigoEsqueceuSenhaPostView(AllowAnyMixin, BasicPostAPIView):
+    serializer_class = EsqueceuSenhaSolicitarSerializer
     success_message = "Código de verificação enviado para o email informado."
     
     def do_action_post(self, serializer, request):
         email = serializer.get('email')
         
         try:
-            user = User.objects.get(email=email)
+            usuario = Usuario.objects.get(email=email)
         except NotFoundException:
             raise NotFoundException('Usuário com o email informado não encontrado.')
         
-        code_reset = user.account_business.get_code_reset_password()
+        codigo_redefinicao = usuario.conta_business.obter_codigo_redefinicao_senha()
 
-        user.account_business.send_reset_password_email(code_reset)
+        usuario.conta_business.enviar_email_redefinicao_senha(codigo_redefinicao)

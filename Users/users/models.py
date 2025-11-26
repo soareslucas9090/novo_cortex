@@ -6,87 +6,87 @@ from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
 from AppCore.core.helpers.helpers_mixin import ModelHelperMixin
 from AppCore.core.business.business_mixin import ModelBusinessMixin
 
-from .business import UserBusiness
-from .helpers import UserHelpers
+from .business import UsuarioBusiness
+from .helpers import UsuarioHelper
 from . import choices
 
 
-class UserManager(Base404ExceptionManager):
-    def create_user(self, email, name, password=None, phone=None, birth_date=None, profiles=None, **extra_fields):
+class GerenciadorUsuario(Base404ExceptionManager):
+    def criar_usuario(self, email, nome, senha=None, telefone=None, data_nascimento=None, perfis=None, **campos_extras):
         if not email:
             raise ValueError('O usuário deve ter um email')
-        if not name:
+        if not nome:
             raise ValueError('O usuário deve ter um nome')
         
         email = self.normalize_email(email)
         
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
-        extra_fields.setdefault('is_active', True)
-        extra_fields.setdefault('status', choices.USER_STATUS_ATIVO)
+        campos_extras.setdefault('is_staff', False)
+        campos_extras.setdefault('is_superuser', False)
+        campos_extras.setdefault('is_active', True)
+        campos_extras.setdefault('status', choices.USUARIO_STATUS_ATIVO)
         
-        user = self.model(
+        usuario = self.model(
             email=email,
-            name=name,
-            phone=phone,
-            birth_date=birth_date,
-            **extra_fields
+            nome=nome,
+            telefone=telefone,
+            data_nascimento=data_nascimento,
+            **campos_extras
         )
         
-        if password:
-            user.set_password(password)
+        if senha:
+            usuario.set_password(senha)
         
-        user.save()
+        usuario.save()
         
-        return user
+        return usuario
     
     def create_superuser(self, email, name, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
-        extra_fields.setdefault('status', choices.USER_STATUS_ATIVO)
-        extra_fields.setdefault('email_verified', True)
+        extra_fields.setdefault('status', choices.USUARIO_STATUS_ATIVO)
+        extra_fields.setdefault('email_verificado', True)
         
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superusuário deve ter is_staff=True')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superusuário deve ter is_superuser=True')
         
-        return self.create_user(
+        return self.criar_usuario(
             email=email,
-            name=name,
-            password=password,
+            nome=name,
+            senha=password,
             **extra_fields
         )
     
 
-class User(
+class Usuario(
     ModelHelperMixin, ModelBusinessMixin, AbstractBaseUser, PermissionsMixin, BasicModel
 ):
-    name = models.CharField(
+    nome = models.CharField(
         'Nome',
         max_length=150,
     )
     email = models.EmailField('Email', unique=True)
-    email_verified = models.BooleanField(
+    email_verificado = models.BooleanField(
         'Email Verificado',
         default=False
     )
-    phone = models.CharField(
+    telefone = models.CharField(
         'Telefone',
         max_length=20,
         blank=True,
         null=True
     )
-    birth_date = models.DateField(
+    data_nascimento = models.DateField(
         'Data de Nascimento',
         blank=True,
         null=True
     )
     status = models.IntegerField(
         'Status',
-        choices=choices.USER_STATUS_CHOICES,
-        default=choices.USER_STATUS_ATIVO
+        choices=choices.USUARIO_STATUS_OPCOES,
+        default=choices.USUARIO_STATUS_ATIVO
     )
     is_active = models.BooleanField(
         'Ativo',
@@ -105,11 +105,11 @@ class User(
         default=timezone.now
     )
 
-    objects = UserManager()
+    objects = GerenciadorUsuario()
     USERNAME_FIELD = "email"
     
-    helper_class = UserHelpers
-    business_class = UserBusiness
+    helper_class = UsuarioHelper
+    business_class = UsuarioBusiness
     
     class Meta:
         db_table = 'users'
@@ -118,35 +118,35 @@ class User(
         ordering = ['-date_joined']
 
     def __str__(self):
-        return self.name
+        return self.nome
 
     @property
-    def account_business(self):
-        from Users.account.business import AccountBusiness
+    def conta_business(self):
+        from Users.account.business import ContaBusiness
 
-        return AccountBusiness(object_instance=self)
+        return ContaBusiness(object_instance=self)
 
     @property
-    def account_helper(self):
-        from Users.account.helpers import AccountHelper
+    def conta_helper(self):
+        from Users.account.helpers import ContaHelper
 
-        return AccountHelper(object_instance=self)
+        return ContaHelper(object_instance=self)
 
 
-class PasswordResetCode(BasicModel):
-    user = models.OneToOneField(
-        User,
+class CodigoRedefinicaoSenha(BasicModel):
+    usuario = models.OneToOneField(
+        Usuario,
         on_delete=models.CASCADE,
-        related_name='password_reset_code',
+        related_name='codigo_redefinicao_senha',
         verbose_name='Usuário'
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    expiration_time = models.DateTimeField(null=False)
-    code = models.IntegerField(null=False)
-    validated = models.BooleanField(default=False)
+    tempo_expiracao = models.DateTimeField(null=False)
+    codigo = models.IntegerField(null=False)
+    validado = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"User {self.user}, code {self.code}"
+        return f"Usuario {self.usuario}, codigo {self.codigo}"
 
     class Meta:
         db_table = 'password_reset_codes'
@@ -155,23 +155,23 @@ class PasswordResetCode(BasicModel):
         ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "code"], name="unique_code_user_constraint"
+                fields=["usuario", "codigo"], name="unique_code_user_constraint"
             )
         ]
 
 
-class Profile(BasicModel, ModelHelperMixin):
-    user = models.ForeignKey(
-        User,
+class Perfil(BasicModel, ModelHelperMixin):
+    usuario = models.ForeignKey(
+        Usuario,
         on_delete=models.CASCADE,
-        related_name='profiles',
+        related_name='perfis',
         verbose_name='Usuário'
     )
-    type = models.CharField(
+    tipo = models.CharField(
         'Tipo',
         max_length=10,
-        choices=choices.PROFILE_TYPE_CHOICES,
-        default=choices.PROFILE_TYPE_USER
+        choices=choices.PERFIL_TIPO_OPCOES,
+        default=choices.PERFIL_TIPO_USUARIO
     )
     bio = models.TextField(
         'Biografia',
@@ -186,8 +186,8 @@ class Profile(BasicModel, ModelHelperMixin):
     )
     status = models.IntegerField(
         'Status',
-        choices=choices.PROFILE_STATUS_CHOICES,
-        default=choices.PROFILE_STATUS_ATIVO
+        choices=choices.PERFIL_STATUS_OPCOES,
+        default=choices.PERFIL_STATUS_ATIVO
     )
     
     class Meta:
@@ -197,9 +197,9 @@ class Profile(BasicModel, ModelHelperMixin):
         ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "type"], name="unique_profile_user_constraint"
+                fields=["usuario", "tipo"], name="unique_profile_user_constraint"
             )
         ]
     
     def __str__(self):
-        return f'{self.user.name} - {self.get_type_display()}'
+        return f'{self.usuario.nome} - {self.get_tipo_display()}'

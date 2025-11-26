@@ -5,19 +5,19 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
-from .serializers import CustomTokenObtainPairSerializer
+from .serializers import TokenPersonalizadoSerializer
 
 
 @extend_schema(tags=["Auth"])
-class TokenObtainPairViewDOC(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+class ObterParTokenViewDOC(TokenObtainPairView):
+    serializer_class = TokenPersonalizadoSerializer
 
 
 @extend_schema(tags=["Auth"])
-class TokenRefreshViewDOC(TokenRefreshView):
+class AtualizarTokenViewDOC(TokenRefreshView):
     pass
 
 
 @extend_schema(tags=["Auth"])
-class TokenVerifyViewDOC(TokenVerifyView):
+class VerificarTokenViewDOC(TokenVerifyView):
     pass

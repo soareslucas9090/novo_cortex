@@ -3,21 +3,21 @@ from Users.account import *
 from AppCore.core.exceptions.exceptions import SystemErrorException
 from AppCore.core.helpers.helpers import ModelInstanceHelpers
 
-from .models import EmailAccountCode
+from .models import CodigoEmailConta
 
 
-class AccountHelper(ModelInstanceHelpers):
-    def user_with_email_and_type_profile_exists(self, email, type_profile):
-        from Users.users.models import User
+class ContaHelper(ModelInstanceHelpers):
+    def usuario_com_email_e_tipo_perfil_existe(self, email, tipo_perfil):
+        from Users.users.models import Usuario
         
-        return User.objects.filter(email=email, profiles__type=type_profile).exists()
+        return Usuario.objects.filter(email=email, perfis__tipo=tipo_perfil).exists()
 
-    def del_codes_expired(self, email=None):
+    def deletar_codigos_expirados(self, email=None):
         if self.object_instance or email:
             if not email:
                 email = self.object_instance.email
 
-            EmailAccountCode.objects.filter(
+            CodigoEmailConta.objects.filter(
                 Q(
                     created_at__lt=timezone.now() - timezone.timedelta(minutes=30)
                 ) | Q(
@@ -28,12 +28,12 @@ class AccountHelper(ModelInstanceHelpers):
         else:
             raise SystemErrorException('Parâmetros insuficientes para deletar códigos expirados.')
         
-    def validate_valid_code(self, email, code):
+    def validar_codigo_valido(self, email, codigo):
         try:
-            email_account_code = EmailAccountCode.objects.get(
-            email=email, code=code, is_validated=True
+            codigo_email_conta = CodigoEmailConta.objects.get(
+            email=email, codigo=codigo, esta_validado=True
             )
             
-            email_account_code.delete()
+            codigo_email_conta.delete()
         except Exception as e:
             raise e
