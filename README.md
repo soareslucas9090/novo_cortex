@@ -36,7 +36,7 @@ base-drf-app/
 │   ├── util/                   # Utilitários gerais
 │   └── basics/                 # Models e componentes base
 │
-├── users/                      # App exemplo completo
+├── usuarios/                      # App exemplo completo
 │   ├── models.py
 │   ├── business.py
 │   ├── rules.py
@@ -217,7 +217,7 @@ Models base reutilizáveis:
 - `SoftDeleteModel` - soft delete
 - `BaseModel` - Combinação de todos
 
-### users
+### usuarios
 
 Exemplo completo de implementação:
 
@@ -307,7 +307,7 @@ if documento.state.can_aprovar():
 pytest
 
 # Executar testes específicos
-pytest users/tests/
+pytest usuarios/tests/
 
 # Com cobertura
 pytest --cov=.
@@ -316,7 +316,7 @@ pytest --cov=.
 ## 📝 Convenções
 
 - **Módulos principais**: Primeira letra maiúscula (`AppCore`)
-- **Apps**: Minúsculas (`users`, `auth`)
+- **Apps**: Minúsculas (`usuarios`, `auth`)
 - **Arquivos**: Minúsculas (`business.py`, `rules.py`)
 - **Aspas**: SEMPRE simples (`'texto'`)
 - **Imports**: Organizados e absolutos quando possível

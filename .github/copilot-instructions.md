@@ -154,8 +154,8 @@ class CriarContaSerializer(serializers.Serializer):
 
 - Para operações POST
 - Override `do_action_post(self, serializer, request)`
-- Define `success_message` (mensagem padrão de sucesso)
-- Retorna dict com `message` e `status_code` (opcional)
+- Define `mensagem_sucesso` (mensagem padrão de sucesso)
+- Retorna dict com `mensagem` e `status_code` (opcional)
 - **Transaction automática**: Operação roda dentro de `transaction.atomic()` com savepoint
 
 ```python
@@ -163,14 +163,14 @@ from AppCore.basics.views.basic_views import BasicPostAPIView
 
 class CriarProdutoView(BasicPostAPIView):
     serializer_class = CriarProdutoSerializer
-    success_message = "Produto criado com sucesso."
+    mensagem_sucesso = "Produto criado com sucesso."
 
     def do_action_post(self, serializer, request):
         dados = serializer.validated_data
         ProdutoBusiness().criar_produto(**dados)
         # Retorno opcional para customizar resposta
         return {
-            'message': 'Custom message',
+            'mensagem': 'Mensagem customizada',
             'status_code': status.HTTP_201_CREATED
         }
 ```
@@ -192,7 +192,7 @@ As views básicas **capturam automaticamente** e retornam HTTP adequado:
 - `AllowAnyMixin` (de `AppCore.basics.mixins.mixins`) para endpoints públicos
 - `IsOwnerOrAdminPermission` para endpoints que exigem ser dono ou admin
   - Verifica: `is_superuser` OU perfil tipo `PERFIL_TIPO_ADMIN` ativo OU é o dono do recurso
-  - Requer método `get_owner_user(obj)` na view
+  - Requer método `obter_usuario_dono(obj)` na view
 
 ## Exceções Customizadas
 
@@ -229,8 +229,12 @@ AppNome/
 - **Imports**: Organizados (stdlib → Django → DRF → AppCore → apps locais)
 - **Nomes**:
   - Módulos principais: PascalCase (`AppCore`, `BaseDRFApp`)
-  - Apps: snake_case minúsculo (`users`, `auth`)
+  - Apps: snake_case minúsculo (`usuarios`, `auth`)
   - Arquivos: snake_case (`business.py`, `helpers.py`)
+- **Nomenclatura em Português**:
+  - Variáveis e funções: português (`mensagem_sucesso`, `obter_usuario_dono()`)
+  - Estruturas de pastas: `AppCore/common/textos/` (emails, mensagens)
+  - Funções utilitárias: `enviar_email_simples()` (não `send_simple_email()`)
 
 ### Localização
 
@@ -278,8 +282,8 @@ cd NomeApp
 
 ## URLs e Estrutura de Rotas
 
-- Apps agrupam URLs: `path('users/', include('Users.urls'))`
-- Apps compostos (Users, Auth) têm `urls.py` na raiz que inclui sub-apps
+- Apps agrupam URLs: `path('usuarios/', include('Usuarios.urls'))`
+- Apps compostos (Usuarios, Auth) têm `urls.py` na raiz que inclui sub-apps
 - Documentação: `/api/schema/`, `/api/schema/swagger/`, `/api/schema/redoc/`
 
 ## Testing

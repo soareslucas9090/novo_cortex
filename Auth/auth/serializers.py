@@ -2,11 +2,11 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
 
-from AppCore.common.texts.messages import (
+from AppCore.common.textos.mensagens import (
     USUARIO_INATIVO_OU_SUSPENSO, USUARIO_SEM_PERFIL_CADASTRADO, PERFIL_INATIVO_OU_SUSPENSO
 )
 
-from Users.users.choices import USUARIO_STATUS_ATIVO, PERFIL_STATUS_ATIVO, PERFIL_TIPO_OPCOES, PERFIL_TIPO_ADMIN
+from Usuarios.usuarios.choices import USUARIO_STATUS_ATIVO, PERFIL_STATUS_ATIVO, PERFIL_TIPO_OPCOES, PERFIL_TIPO_ADMIN
 
 
 PERFIL_TIPO_OPCOES_SEM_ADMIN = tuple(

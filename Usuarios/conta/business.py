@@ -2,11 +2,11 @@ import random, string
 
 from AppCore.core.business.business import ModelInstanceBusiness
 from AppCore.core.exceptions.exceptions import SystemErrorException
-from AppCore.common.util.util import send_simple_email
-from AppCore.common.texts.emails import EMAIL_CREATE_ACCOUNT, EMAIL_PASSWORD_RESET_ACCOUNT
+from AppCore.common.util.util import enviar_email_simples
+from AppCore.common.textos.emails import EMAIL_CRIAR_CONTA, EMAIL_RESETAR_SENHA_CONTA
 
 from BaseDRFApp import settings
-from Users.users.models import Usuario
+from Usuarios.usuarios.models import Usuario
 from .models import CodigoEmailConta
 from .rules import ContaRule
 from .helpers import ContaHelper
@@ -48,12 +48,12 @@ class ContaBusiness(ModelInstanceBusiness):
         
     def enviar_email_verificacao(self, email, codigo_email_conta):
         try:
-            send_simple_email(
+            enviar_email_simples(
                 "Recuperação de senha",
                 f"Código de recuperação de senha: {codigo_email_conta.codigo}",
                 settings.DEFAULT_FROM_EMAIL,
                 [email],
-                EMAIL_CREATE_ACCOUNT % codigo_email_conta.codigo
+                EMAIL_CRIAR_CONTA % codigo_email_conta.codigo
             )
         except self.exceptions_handled as e:
             raise e
@@ -115,12 +115,12 @@ class ContaBusiness(ModelInstanceBusiness):
 
     def enviar_email_redefinicao_senha(self, codigo_email_conta):
         try:
-            send_simple_email(
+            enviar_email_simples(
                 "Redefinição de senha - Código de verificação",
                 f"Código de verificação: {codigo_email_conta.codigo}",
                 settings.DEFAULT_FROM_EMAIL,
                 [self.usuario.email],
-                EMAIL_PASSWORD_RESET_ACCOUNT % codigo_email_conta.codigo
+                EMAIL_RESETAR_SENHA_CONTA % codigo_email_conta.codigo
             )
         except self.exceptions_handled as e:
             raise e

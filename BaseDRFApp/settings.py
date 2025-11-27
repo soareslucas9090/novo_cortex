@@ -78,8 +78,8 @@ AUTH_APPS = [
 ]
 
 USERS_APPS = [
-    'Users.users',
-    'Users.account',
+    'Usuarios.usuarios',
+    'Usuarios.conta',
 ]
 
 INSTALLED_APPS = DEFAULT_ROOT_APPS + AUTH_APPS + USERS_APPS
@@ -98,7 +98,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-AUTH_USER_MODEL = 'users.Usuario'
+AUTH_USER_MODEL = 'usuarios.Usuario'
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_EMAIL_REQUIRED = True

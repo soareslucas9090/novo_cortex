@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Usuário',
                 'verbose_name_plural': 'Usuários',
-                'db_table': 'users',
+                'db_table': 'usuarios',
                 'ordering': ['-date_joined'],
             },
             bases=(models.Model, AppCore.core.helpers.helpers_mixin.ModelHelperMixin),

@@ -1,4 +1,4 @@
-EMAIL_CREATE_ACCOUNT = """
+EMAIL_CRIAR_CONTA = """
 <html lang="pt-BR">
     <head>
         <meta charset="UTF-8">
@@ -70,7 +70,7 @@ EMAIL_CREATE_ACCOUNT = """
 </html>
 """
 
-EMAIL_PASSWORD_RESET_ACCOUNT = """
+EMAIL_RESETAR_SENHA_CONTA = """
 <html lang="pt-BR">
     <head>
         <meta charset="UTF-8">

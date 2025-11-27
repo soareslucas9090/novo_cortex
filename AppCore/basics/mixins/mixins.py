@@ -8,7 +8,7 @@ class AllowAnyMixin:
 class IsOwnerOrAdminMixin:
     permission_classes = [IsOwnerOrAdminPermission]
     
-    def get_owner_user(self, obj):
+    def obter_usuario_dono(self, obj):
         raise NotImplementedError(
-            f'{self.__class__.__name__} deve implementar o método get_owner_user(obj)'
+            f'{self.__class__.__name__} deve implementar o método obter_usuario_dono(obj)'
         )

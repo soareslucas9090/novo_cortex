@@ -14,7 +14,7 @@ from AppCore.core.exceptions.exceptions import (
     BusinessRuleException, SystemErrorException, ValidationException, AuthorizationException, NotFoundException
 )
 
-from AppCore.common.texts.messages import (
+from AppCore.common.textos.mensagens import (
     RESPONSE_TENTE_NOVAMENTE, RESPONSE_ALGO_QUE_MANDOU_ESTA_ERRADO, RESPONSE_VOCE_NAO_PODE_FAZER_ISSO,
     RESPONSE_VOCE_NAO_PODE_FAZER_ISSO, RESPONSE_ALGUM_DADO_NAO_FOI_ENCONTRADO
 )
@@ -22,7 +22,7 @@ from AppCore.common.texts.messages import (
 
 class BasicPostAPIView(GenericAPIView):
     http_method_names = ['post']
-    success_message = ''
+    mensagem_sucesso = ''
     
     def do_action_post(self, serializer, request):
         raise SystemErrorException("Este método não foi implementado.")
@@ -36,7 +36,7 @@ class BasicPostAPIView(GenericAPIView):
             with transaction.atomic():
                 try:
                     sid = transaction.savepoint()
-                    result = self.do_action_post(serializer, request)
+                    resultado = self.do_action_post(serializer, request)
                 except Exception as e:
                     transaction.savepoint_rollback(sid)
                     raise e
@@ -45,15 +45,15 @@ class BasicPostAPIView(GenericAPIView):
 
             data = {'status': 'success'}
             
-            if not result: result = {}
+            if not resultado: resultado = {}
             
-            if not result.get('message'):
-                result['message'] = self.success_message
+            if not resultado.get('mensagem'):
+                resultado['mensagem'] = self.mensagem_sucesso
             
-            data['message'] = result.get('message', 'Success') if result else 'Success'
+            data['mensagem'] = resultado.get('mensagem', 'Sucesso') if resultado else 'Sucesso'
 
             return Response(
-                data, status=result.get('status_code', status.HTTP_200_OK)
+                data, status=resultado.get('status_code', status.HTTP_200_OK)
             )
         except BusinessRuleException as err:
             return Response(
@@ -82,7 +82,7 @@ class BasicPostAPIView(GenericAPIView):
             
 class BasicGetAPIView(GenericAPIView):
     http_method_names = ['get']
-    success_message = ''
+    mensagem_sucesso = ''
     
     def validate_get(self, request, *args, **kwargs):
         pass
@@ -93,15 +93,15 @@ class BasicGetAPIView(GenericAPIView):
 
             data = {'status': 'success'}
             
-            if not result: result = {}
+            if not resultado: resultado = {}
             
-            if not result.get('message'):
-                result['message'] = self.success_message
+            if not resultado.get('mensagem'):
+                resultado['mensagem'] = self.mensagem_sucesso
             
-            data['message'] = result.get('message', 'Success') if result else 'Success'
+            data['mensagem'] = resultado.get('mensagem', 'Sucesso') if resultado else 'Sucesso'
 
             return Response(
-                data, status=result.get('status_code', status.HTTP_200_OK)
+                data, status=resultado.get('status_code', status.HTTP_200_OK)
             )
         except BusinessRuleException as err:
             return Response(

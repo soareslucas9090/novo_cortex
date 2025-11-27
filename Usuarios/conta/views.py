@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from AppCore.core.exceptions.exceptions import NotFoundException
 from AppCore.basics.views.basic_views import BasicPostAPIView
 from AppCore.basics.mixins.mixins import AllowAnyMixin
-from Users.users.models import Usuario
+from Usuarios.usuarios.models import Usuario
 
 from .serializers import (
     CriarContaSerializer, ConfirmarCodigoCriarContaSerializer,
@@ -17,10 +17,10 @@ from .serializers import (
 from .business import ContaBusiness
 
 
-@extend_schema(tags=["Users.Create account"])
+@extend_schema(tags=["Usuarios.Create conta"])
 class CriarContaPostView(BasicPostAPIView, AllowAnyMixin):
     serializer_class = CriarContaSerializer
-    success_message = "Código de verificação enviado para o email informado."
+    mensagem_sucesso = "Código de verificação enviado para o email informado."
     
     def do_action_post(self, serializer, request):
         email = serializer.get('email')
@@ -33,10 +33,10 @@ class CriarContaPostView(BasicPostAPIView, AllowAnyMixin):
         conta_business.enviar_email_verificacao(email, codigo_email_conta)
 
 
-@extend_schema(tags=["Users.Create account"])       
+@extend_schema(tags=["Usuarios.Create conta"])       
 class ConfirmarCodigoCriarContaPostView(BasicPostAPIView, AllowAnyMixin):
     serializer_class = ConfirmarCodigoCriarContaSerializer
-    success_message = "Código verificado. Você pode prosseguir com a criação da conta."
+    mensagem_sucesso = "Código verificado. Você pode prosseguir com a criação da conta."
     
     def do_action_post(self, serializer, request):
         email = serializer.get('email')
@@ -47,10 +47,10 @@ class ConfirmarCodigoCriarContaPostView(BasicPostAPIView, AllowAnyMixin):
         conta_business.validar_codigo(email=email, codigo=codigo)
 
         
-@extend_schema(tags=["Users.Create account"])
+@extend_schema(tags=["Usuarios.Create conta"])
 class ConfirmarSenhaContaPostView(BasicPostAPIView, AllowAnyMixin):
     serializer_class = ConfirmarSenhaCriarContaSerializer
-    success_message = "Usuário criado com sucesso."
+    mensagem_sucesso = "Usuário criado com sucesso."
     
     def do_action_post(self, serializer, request):
         email = serializer.get('email')
@@ -73,10 +73,10 @@ class ConfirmarSenhaContaPostView(BasicPostAPIView, AllowAnyMixin):
         }
 
 
-@extend_schema(tags=["Users.Password reset"])
+@extend_schema(tags=["Usuarios.Password reset"])
 class SolicitarCodigoEsqueceuSenhaPostView(AllowAnyMixin, BasicPostAPIView):
     serializer_class = EsqueceuSenhaSolicitarSerializer
-    success_message = "Código de verificação enviado para o email informado."
+    mensagem_sucesso = "Código de verificação enviado para o email informado."
     
     def do_action_post(self, serializer, request):
         email = serializer.get('email')

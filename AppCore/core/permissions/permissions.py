@@ -1,6 +1,6 @@
 from rest_framework.permissions import AllowAny, BasePermission
 
-from Users.users import choices
+from Usuarios.usuarios import choices
 
 
 class AllowAnyPermission(AllowAny):
@@ -36,6 +36,6 @@ class IsOwnerOrAdminPermission(BasePermission):
         if perfil_admin:
             return True
         
-        usuario_proprietario = view.get_owner_user(obj)
+        usuario_proprietario = view.obter_usuario_dono(obj)
         
         return usuario_proprietario == request.user

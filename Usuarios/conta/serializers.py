@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from Users.users.choices import PERFIL_TIPO_OPCOES
+from Usuarios.usuarios.choices import PERFIL_TIPO_OPCOES
 import re
 
 

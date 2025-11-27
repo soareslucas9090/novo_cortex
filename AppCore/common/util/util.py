@@ -3,7 +3,7 @@ from django.core.mail import EmailMultiAlternatives
 from AppCore.core.exceptions.exceptions import SystemErrorException
 
 
-def send_simple_email(subject, simple_text, from_email, to_emails, html_content):
+def enviar_email_simples(subject, simple_text, from_email, to_emails, html_content):
     try:
         email = EmailMultiAlternatives(
             subject,

@@ -112,7 +112,7 @@ class Usuario(
     business_class = UsuarioBusiness
     
     class Meta:
-        db_table = 'users'
+        db_table = 'usuarios'
         verbose_name = 'Usuário'
         verbose_name_plural = 'Usuários'
         ordering = ['-date_joined']
@@ -122,13 +122,13 @@ class Usuario(
 
     @property
     def conta_business(self):
-        from Users.account.business import ContaBusiness
+        from Usuarios.conta.business import ContaBusiness
 
         return ContaBusiness(object_instance=self)
 
     @property
     def conta_helper(self):
-        from Users.account.helpers import ContaHelper
+        from Usuarios.conta.helpers import ContaHelper
 
         return ContaHelper(object_instance=self)
 
