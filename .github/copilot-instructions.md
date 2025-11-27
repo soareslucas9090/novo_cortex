@@ -1,5 +1,7 @@
 # Instruções para AI Coding Agents - Base DRF App
 
+> **Última atualização:** 27 de novembro de 2025
+
 ## Arquitetura em Camadas
 
 Este projeto segue uma arquitetura modular de 4 camadas bem definidas. **Cada model deve ter suas próprias classes de camadas** localizadas no mesmo app:
@@ -297,3 +299,99 @@ cd NomeApp
 - Deploy com Docker
 - Server: Gunicorn (Linux) / Waitress (Windows)
 - Static files: WhiteNoise (já configurado)
+
+---
+
+## Modelos do Domínio (DER/Diagrama de Classes)
+
+O arquivo `Usuarios/models-teste.py` contém a tradução completa do DER para Django Models. Abaixo está o resumo dos modelos e seus relacionamentos:
+
+### Hierarquia de Herança
+
+```
+                    Pessoa
+                       │
+        ┌──────────────┼──────────────┬──────────────┐
+        │              │              │              │
+    Servidor      Terceirizado     Aluno       Estagiario
+        │                             │
+   ┌────┴────┐                    Egresso
+   │         │
+Professor  TecnicoAdministrativo
+```
+
+### Modelos e Relacionamentos
+
+| Modelo                    | Descrição                    | Relacionamentos                             |
+| ------------------------- | ---------------------------- | ------------------------------------------- |
+| **Campus**                | Campus da instituição        | 1:N com Pessoa                              |
+| **Empresa**               | Empresa terceirizada         | 1:N com Terceirizado                        |
+| **InstituicaoExterna**    | Instituição para estagiários | 1:N com Estagiario                          |
+| **Setor**                 | Setor dentro do campus       | 1:N com Funcao                              |
+| **Funcao**                | Função dentro de um setor    | 1:N com PessoaFuncao                        |
+| **Pessoa**                | Classe base central          | Herança para todos os tipos de pessoa       |
+| **Contato**               | Email/telefone da pessoa     | N:1 com Pessoa                              |
+| **Endereco**              | Endereço da pessoa           | N:1 com Pessoa                              |
+| **Matricula**             | Carteirinha/matrícula        | N:1 com Pessoa                              |
+| **PessoaFuncao**          | Tabela associativa           | M:N entre Pessoa e Funcao                   |
+| **Servidor**              | Servidor público             | Herda de Pessoa (OneToOne)                  |
+| **Professor**             | Professor                    | Herda de Servidor (OneToOne)                |
+| **TecnicoAdministrativo** | Técnico Administrativo       | Herda de Servidor (OneToOne)                |
+| **Terceirizado**          | Funcionário terceirizado     | Herda de Pessoa, N:1 com Empresa            |
+| **Aluno**                 | Aluno matriculado            | Herda de Pessoa (OneToOne)                  |
+| **Egresso**               | Ex-aluno formado             | Herda de Aluno (OneToOne)                   |
+| **Estagiario**            | Estagiário                   | Herda de Pessoa, N:1 com InstituicaoExterna |
+
+### Apps Sugeridos (Ordem de Criação)
+
+1. **campus** - Model: `Campus` (sem dependências)
+2. **empresas** - Models: `Empresa`, `InstituicaoExterna` (sem dependências)
+3. **setores** - Models: `Setor`, `Funcao` (sem dependências)
+4. **pessoas** - Models: `Pessoa`, `Contato`, `Endereco`, `Matricula`, `PessoaFuncao` (depende de campus, setores)
+5. **servidores** - Models: `Servidor`, `Professor`, `TecnicoAdministrativo` (depende de pessoas)
+6. **alunos** - Models: `Aluno`, `Egresso` (depende de pessoas)
+7. **terceirizados** - Models: `Terceirizado` (depende de pessoas, empresas)
+8. **estagiarios** - Models: `Estagiario` (depende de pessoas, empresas)
+
+### Choices Definidos
+
+- **Status genérico**: `STATUS_ATIVO`, `STATUS_INATIVO`
+- **Situação do Aluno**: `MATRICULADO`, `TRANCADO`, `FORMADO`, `DESISTENTE`, `TRANSFERIDO`
+- **Turno**: `MATUTINO`, `VESPERTINO`, `NOTURNO`, `INTEGRAL`
+- **Forma de Ingresso**: `VESTIBULAR`, `ENEM`, `TRANSFERENCIA`, `REINGRESSO`
+- **Carga Horária Servidor**: `20h`, `40h`, `DE` (Dedicação Exclusiva)
+- **Título Professor**: `GRADUADO`, `ESPECIALISTA`, `MESTRE`, `DOUTOR`, `POS_DOUTOR`
+- **Classe Professor**: `D`, `C`, `B`, `A`, `TITULAR`
+- **Nível TAE**: `A`, `B`, `C`, `D`, `E`
+
+### Padrão de Herança nos Models
+
+Usamos **OneToOneField com primary_key=True** para herança:
+
+```python
+class Servidor(BasicModel):
+    pessoa = models.OneToOneField(
+        Pessoa,
+        on_delete=models.CASCADE,
+        related_name='servidor',
+        primary_key=True,
+    )
+    # campos específicos do servidor...
+
+class Professor(BasicModel):
+    servidor = models.OneToOneField(
+        Servidor,
+        on_delete=models.CASCADE,
+        related_name='professor',
+        primary_key=True,
+    )
+    # campos específicos do professor...
+```
+
+### Exemplos de Funções por Setor (conforme diagrama)
+
+- **Setor de Saúde**: Médico, Enfermeiro, Odontologista
+- **Direção**: Diretor de ensino, Diretor geral
+- **Coordenações**: Coordenador de TADS, Coordenador de Biologia, Coordenador de Matemática
+- **Rádio**: Monitor da Rádio
+- **Geral**: Professor
