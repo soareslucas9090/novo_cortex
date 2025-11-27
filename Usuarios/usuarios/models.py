@@ -67,6 +67,11 @@ class Usuario(
         'Nome',
         max_length=150,
     )
+    cpf = models.CharField(
+        'CPF',
+        max_length=11,
+        unique=True
+    )
     email = models.EmailField('Email', unique=True)
     email_verificado = models.BooleanField(
         'Email Verificado',
@@ -106,7 +111,8 @@ class Usuario(
     )
 
     objects = GerenciadorUsuario()
-    USERNAME_FIELD = "email"
+    USERNAME_FIELD = 'cpf'
+    REQUIRED_FIELDS = ['email', 'nome']
     
     helper_class = UsuarioHelper
     business_class = UsuarioBusiness

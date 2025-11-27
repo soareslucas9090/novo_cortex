@@ -17,12 +17,20 @@ Usuario = get_user_model()
 
 
 class TokenPersonalizadoSerializer(TokenObtainPairSerializer):
+    username_field = 'cpf'
+    
     tipo = serializers.ChoiceField(
         choices=PERFIL_TIPO_OPCOES_SEM_ADMIN,
         required=False,
         allow_blank=True,
         default='user'
     )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove o campo email (padrão) e adiciona cpf
+        self.fields.pop('email', None)
+        self.fields['cpf'] = serializers.CharField(write_only=True)
     
     def validate(self, attrs):
         tipo_login = attrs.pop('tipo', 'user')
