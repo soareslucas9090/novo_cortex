@@ -1,6 +1,6 @@
 # Instruções para AI Coding Agents - Base DRF App
 
-> **Última atualização:** 27 de novembro de 2025
+> **Última atualização:** 28 de novembro de 2025
 
 ## Arquitetura em Camadas
 
@@ -306,52 +306,54 @@ cd NomeApp
 
 O arquivo `Usuarios/models-teste.py` contém a tradução completa do DER para Django Models. Abaixo está o resumo dos modelos e seus relacionamentos:
 
+### Autenticação
+
+- **Login por CPF** (não email)
+- **Criação de usuários**: Via JSON por admin (individual ou em lote) ou por portal Admin
+- **Não há auto-cadastro**: Usuários são criados por administradores
+
 ### Hierarquia de Herança
 
 ```
-                    Pessoa
+                    Usuario
                        │
         ┌──────────────┼──────────────┬──────────────┐
         │              │              │              │
     Servidor      Terceirizado     Aluno       Estagiario
-        │                             │
-   ┌────┴────┐                    Egresso
-   │         │
-Professor  TecnicoAdministrativo
 ```
 
 ### Modelos e Relacionamentos
 
-| Modelo                    | Descrição                    | Relacionamentos                             |
-| ------------------------- | ---------------------------- | ------------------------------------------- |
-| **Campus**                | Campus da instituição        | 1:N com Pessoa                              |
-| **Empresa**               | Empresa terceirizada         | 1:N com Terceirizado                        |
-| **InstituicaoExterna**    | Instituição para estagiários | 1:N com Estagiario                          |
-| **Setor**                 | Setor dentro do campus       | 1:N com Funcao                              |
-| **Funcao**                | Função dentro de um setor    | 1:N com PessoaFuncao                        |
-| **Pessoa**                | Classe base central          | Herança para todos os tipos de pessoa       |
-| **Contato**               | Email/telefone da pessoa     | N:1 com Pessoa                              |
-| **Endereco**              | Endereço da pessoa           | N:1 com Pessoa                              |
-| **Matricula**             | Carteirinha/matrícula        | N:1 com Pessoa                              |
-| **PessoaFuncao**          | Tabela associativa           | M:N entre Pessoa e Funcao                   |
-| **Servidor**              | Servidor público             | Herda de Pessoa (OneToOne)                  |
-| **Professor**             | Professor                    | Herda de Servidor (OneToOne)                |
-| **TecnicoAdministrativo** | Técnico Administrativo       | Herda de Servidor (OneToOne)                |
-| **Terceirizado**          | Funcionário terceirizado     | Herda de Pessoa, N:1 com Empresa            |
-| **Aluno**                 | Aluno matriculado            | Herda de Pessoa (OneToOne)                  |
-| **Egresso**               | Ex-aluno formado             | Herda de Aluno (OneToOne)                   |
-| **Estagiario**            | Estagiário                   | Herda de Pessoa, N:1 com InstituicaoExterna |
+| Modelo          | Descrição                       | Relacionamentos                                            |
+| --------------- | ------------------------------- | ---------------------------------------------------------- |
+| **Campus**      | Campus da instituição           | 1:N com Usuario                                            |
+| **Cargo**       | Cargos na instituição           | Entidade independente                                      |
+| **Empresa**     | Empresa/Instituição externa     | 1:N com Terceirizado, 1:N com Estagiario                   |
+| **Curso**       | Cursos para estagiários         | 1:N com Estagiario                                         |
+| **Setor**       | Setor dentro do campus          | 1:N com Atividade, M:N com Usuario (via UsuarioSetor)      |
+| **Atividade**   | Atividade dentro de um setor    | 1:N com Funcao                                             |
+| **Funcao**      | Função dentro de uma atividade  | N:1 com Atividade                                          |
+| **Usuario**     | Classe base central (login CPF) | Herança para todos os tipos, 1:N com Contato/Endereco/etc  |
+| **UsuarioSetor**| Tabela associativa              | M:N entre Usuario e Setor (com e_responsavel, monitor)     |
+| **Contato**     | Email/telefone do usuário       | N:1 com Usuario                                            |
+| **Endereco**    | Endereço do usuário             | N:1 com Usuario                                            |
+| **Matricula**   | Carteirinha/matrícula           | N:1 com Usuario                                            |
+| **Servidor**    | Servidor público                | Herda de Usuario (OneToOne)                                |
+| **Terceirizado**| Funcionário terceirizado        | Herda de Usuario, N:1 com Empresa                          |
+| **Aluno**       | Aluno matriculado               | Herda de Usuario (OneToOne)                                |
+| **Estagiario**  | Estagiário                      | Herda de Usuario, N:1 com Empresa, N:1 com Curso           |
 
 ### Apps Sugeridos (Ordem de Criação)
 
 1. **campus** - Model: `Campus` (sem dependências)
-2. **empresas** - Models: `Empresa`, `InstituicaoExterna` (sem dependências)
-3. **setores** - Models: `Setor`, `Funcao` (sem dependências)
-4. **pessoas** - Models: `Pessoa`, `Contato`, `Endereco`, `Matricula`, `PessoaFuncao` (depende de campus, setores)
-5. **servidores** - Models: `Servidor`, `Professor`, `TecnicoAdministrativo` (depende de pessoas)
-6. **alunos** - Models: `Aluno`, `Egresso` (depende de pessoas)
-7. **terceirizados** - Models: `Terceirizado` (depende de pessoas, empresas)
-8. **estagiarios** - Models: `Estagiario` (depende de pessoas, empresas)
+2. **cargos** - Model: `Cargo` (sem dependências)
+3. **empresas** - Models: `Empresa`, `Curso` (sem dependências)
+4. **usuarios** - Models: `Usuario`, `Contato`, `Endereco`, `Matricula` (depende de campus)
+5. **setores** - Models: `Setor`, `Atividade`, `Funcao`, `UsuarioSetor` (depende de usuarios, campus)
+6. **servidores** - Model: `Servidor` (depende de usuarios)
+7. **alunos** - Model: `Aluno` (depende de usuarios)
+8. **terceirizados** - Model: `Terceirizado` (depende de usuarios, empresas)
+9. **estagiarios** - Model: `Estagiario` (depende de usuarios, empresas)
 
 ### Choices Definidos
 
@@ -359,10 +361,7 @@ Professor  TecnicoAdministrativo
 - **Situação do Aluno**: `MATRICULADO`, `TRANCADO`, `FORMADO`, `DESISTENTE`, `TRANSFERIDO`
 - **Turno**: `MATUTINO`, `VESPERTINO`, `NOTURNO`, `INTEGRAL`
 - **Forma de Ingresso**: `VESTIBULAR`, `ENEM`, `TRANSFERENCIA`, `REINGRESSO`
-- **Carga Horária Servidor**: `20h`, `40h`, `DE` (Dedicação Exclusiva)
-- **Título Professor**: `GRADUADO`, `ESPECIALISTA`, `MESTRE`, `DOUTOR`, `POS_DOUTOR`
-- **Classe Professor**: `D`, `C`, `B`, `A`, `TITULAR`
-- **Nível TAE**: `A`, `B`, `C`, `D`, `E`
+- **Jornada de Trabalho Servidor**: `20`, `40`, `0` (Dedicação Exclusiva)
 
 ### Padrão de Herança nos Models
 
@@ -370,28 +369,52 @@ Usamos **OneToOneField com primary_key=True** para herança:
 
 ```python
 class Servidor(BasicModel):
-    pessoa = models.OneToOneField(
-        Pessoa,
+    usuario = models.OneToOneField(
+        Usuario,
         on_delete=models.CASCADE,
         related_name='servidor',
         primary_key=True,
     )
     # campos específicos do servidor...
 
-class Professor(BasicModel):
-    servidor = models.OneToOneField(
-        Servidor,
+class Aluno(BasicModel):
+    usuario = models.OneToOneField(
+        Usuario,
         on_delete=models.CASCADE,
-        related_name='professor',
+        related_name='aluno',
         primary_key=True,
     )
-    # campos específicos do professor...
+    # campos específicos do aluno...
 ```
 
-### Exemplos de Funções por Setor (conforme diagrama)
+### Usuario - Configuração de Autenticação
 
-- **Setor de Saúde**: Médico, Enfermeiro, Odontologista
-- **Direção**: Diretor de ensino, Diretor geral
-- **Coordenações**: Coordenador de TADS, Coordenador de Biologia, Coordenador de Matemática
-- **Rádio**: Monitor da Rádio
-- **Geral**: Professor
+```python
+class Usuario(AbstractBaseUser, BasicModel):
+    USERNAME_FIELD = 'cpf'
+    REQUIRED_FIELDS = ['nome']
+    
+    # campos...
+    cpf = models.CharField('CPF', max_length=11, unique=True)
+    nome = models.CharField('Nome', max_length=255)
+    # ...
+```
+
+### UsuarioSetor - Tabela Associativa
+
+```python
+class UsuarioSetor(BasicModel):
+    usuario = models.ForeignKey(Usuario, ...)
+    setor = models.ForeignKey(Setor, ...)
+    campus = models.ForeignKey(Campus, ...)
+    e_responsavel = models.BooleanField(default=False)
+    monitor = models.BooleanField(default=False)
+    data_entrada = models.DateField()
+    data_saida = models.DateField(null=True)
+```
+
+### Criação de Usuários (Via Admin JSON)
+
+- Usuários são criados por administradores via endpoint específico
+- Suporte a criação individual ou em lote via JSON
+- Não há fluxo de auto-cadastro com envio de email

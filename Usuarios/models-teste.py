@@ -4,63 +4,77 @@ Models de Teste - Tradução completa do DER e Diagrama de Classes
 Este arquivo contém todos os modelos traduzidos do DER para Django Models.
 Será usado como referência para criação dos apps e módulos correspondentes.
 
+ATUALIZADO: 28 de novembro de 2025
+
 =============================================================================
 ESTRUTURA DE APPS SUGERIDA:
 =============================================================================
 
-1. Usuarios (já existe) - Mantém Usuario base
-   - Usuario (AbstractBaseUser) - JÁ IMPLEMENTADO
-   - Pessoa (extensão do Usuario com dados específicos do contexto acadêmico)
-
-2. Campus
-   - Campus
-
-3. Pessoas
-   - Pessoa (base)
-   - Servidor
-   - Professor
-   - TecnicoAdministrativo
-   - Aluno
-   - Egresso
-   - Estagiario
-   - Terceirizado
+1. Usuarios (já existe) - Mantém Usuario base (login por CPF)
+   - Usuario (AbstractBaseUser) - Login por CPF
    - Contato
    - Endereco
    - Matricula
 
-4. Setores
+2. Campus
+   - Campus
+
+3. Setores
    - Setor
+   - Atividade
    - Funcao
-   - PessoaFuncao
+   - UsuarioSetor (tabela associativa Usuario-Setor)
+
+4. Cargos
+   - Cargo
 
 5. Empresas
-   - Empresa
-   - InstituicaoExterna
+   - Empresa (unificada com InstituicaoExterna)
+   - Curso
+
+6. Servidores
+   - Servidor
+
+7. Alunos
+   - Aluno
+
+8. Terceirizados
+   - Terceirizado
+
+9. Estagiarios
+   - Estagiario
 
 =============================================================================
 RELACIONAMENTOS PRINCIPAIS:
 =============================================================================
 
-- Campus (1) → (*) Pessoa
-- Pessoa (1) → (*) Contato
-- Pessoa (1) → (*) Endereco
-- Pessoa (1) → (*) Matricula
-- Pessoa (1) → (*) PessoaFuncao
-- Funcao (1) → (*) PessoaFuncao
-- Setor (1) → (*) Funcao
-- Pessoa ← Servidor (herança)
-- Pessoa ← Terceirizado (herança)
-- Pessoa ← Aluno (herança)
-- Pessoa ← Estagiario (herança)
-- Servidor ← Professor (herança)
-- Servidor ← TecnicoAdministrativo (herança)
-- Aluno ← Egresso (herança)
+- Campus (1) → (*) Usuario
+- Usuario (1) → (*) Contato
+- Usuario (1) → (*) Endereco
+- Usuario (1) → (*) Matricula
+- Usuario (*) ↔ (*) Setor (via UsuarioSetor)
+- Setor (1) → (*) Atividade
+- Atividade (1) → (*) Funcao
+- Usuario ← Servidor (herança via OneToOne)
+- Usuario ← Terceirizado (herança via OneToOne)
+- Usuario ← Aluno (herança via OneToOne)
+- Usuario ← Estagiario (herança via OneToOne)
 - Empresa (1) → (*) Terceirizado
-- InstituicaoExterna (1) → (*) Estagiario
+- Empresa (1) → (*) Estagiario
+- Curso (1) → (*) Estagiario
+
+=============================================================================
+AUTENTICAÇÃO:
+=============================================================================
+
+- Login: CPF (não email)
+- Criação de usuários: Via JSON por admin (individual ou em lote)
+- Não há mais fluxo de auto-cadastro com envio de email
 
 =============================================================================
 """
 
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
 
@@ -107,7 +121,7 @@ TURNO_OPCOES = [
     (TURNO_INTEGRAL, 'Integral'),
 ]
 
-# Forma de Ingresso
+# Forma de Ingresso do Aluno
 FORMA_INGRESSO_VESTIBULAR = 'vestibular'
 FORMA_INGRESSO_ENEM = 'enem'
 FORMA_INGRESSO_TRANSFERENCIA = 'transferencia'
@@ -119,56 +133,14 @@ FORMA_INGRESSO_OPCOES = [
     (FORMA_INGRESSO_REINGRESSO, 'Reingresso'),
 ]
 
-# Carga Horária do Servidor
-CARGA_HORARIA_20 = '20h'
-CARGA_HORARIA_40 = '40h'
-CARGA_HORARIA_DE = 'de'  # Dedicação Exclusiva
-CARGA_HORARIA_OPCOES = [
-    (CARGA_HORARIA_20, '20 horas'),
-    (CARGA_HORARIA_40, '40 horas'),
-    (CARGA_HORARIA_DE, 'Dedicação Exclusiva'),
-]
-
-# Título do Professor
-TITULO_GRADUADO = 'graduado'
-TITULO_ESPECIALISTA = 'especialista'
-TITULO_MESTRE = 'mestre'
-TITULO_DOUTOR = 'doutor'
-TITULO_POS_DOUTOR = 'pos_doutor'
-TITULO_OPCOES = [
-    (TITULO_GRADUADO, 'Graduado'),
-    (TITULO_ESPECIALISTA, 'Especialista'),
-    (TITULO_MESTRE, 'Mestre'),
-    (TITULO_DOUTOR, 'Doutor'),
-    (TITULO_POS_DOUTOR, 'Pós-Doutor'),
-]
-
-# Classe do Professor
-CLASSE_D = 'd'
-CLASSE_C = 'c'
-CLASSE_B = 'b'
-CLASSE_A = 'a'
-CLASSE_TITULAR = 'titular'
-CLASSE_OPCOES = [
-    (CLASSE_D, 'Classe D'),
-    (CLASSE_C, 'Classe C'),
-    (CLASSE_B, 'Classe B'),
-    (CLASSE_A, 'Classe A'),
-    (CLASSE_TITULAR, 'Titular'),
-]
-
-# Nível Técnico Administrativo
-NIVEL_A = 'a'
-NIVEL_B = 'b'
-NIVEL_C = 'c'
-NIVEL_D = 'd'
-NIVEL_E = 'e'
-NIVEL_OPCOES = [
-    (NIVEL_A, 'Nível A'),
-    (NIVEL_B, 'Nível B'),
-    (NIVEL_C, 'Nível C'),
-    (NIVEL_D, 'Nível D'),
-    (NIVEL_E, 'Nível E'),
+# Jornada de Trabalho do Servidor
+JORNADA_20 = 20
+JORNADA_40 = 40
+JORNADA_DE = 0  # Dedicação Exclusiva (representado como 0 para indicar DE)
+JORNADA_OPCOES = [
+    (JORNADA_20, '20 horas'),
+    (JORNADA_40, '40 horas'),
+    (JORNADA_DE, 'Dedicação Exclusiva'),
 ]
 
 
@@ -181,7 +153,7 @@ class Campus(BasicModel):
     Representa um campus da instituição.
     
     Relacionamentos:
-    - Campus (1) → (*) Pessoa
+    - Campus (1) → (*) Usuario
     """
     nome = models.CharField(
         'Nome',
@@ -190,11 +162,6 @@ class Campus(BasicModel):
     cnpj = models.CharField(
         'CNPJ',
         max_length=14,
-        unique=True,
-    )
-    codigo_campus = models.CharField(
-        'Código do Campus',
-        max_length=50,
         unique=True,
     )
     is_active = models.BooleanField(
@@ -215,25 +182,59 @@ class Campus(BasicModel):
 
 
 # =============================================================================
-# MODELS - EMPRESA E INSTITUIÇÃO EXTERNA
+# MODELS - CARGO
+# =============================================================================
+
+class Cargo(BasicModel):
+    """
+    Representa um cargo na instituição.
+    
+    Entidade simples sem relacionamentos diretos no DER.
+    """
+    nome = models.CharField(
+        'Nome',
+        max_length=255,
+        unique=True,
+    )
+    is_active = models.BooleanField(
+        'Ativo',
+        default=True,
+    )
+
+    objects = Base404ExceptionManager()
+
+    class Meta:
+        db_table = 'cargos'
+        verbose_name = 'Cargo'
+        verbose_name_plural = 'Cargos'
+        ordering = ['nome']
+
+    def __str__(self):
+        return self.nome
+
+
+# =============================================================================
+# MODELS - EMPRESA E CURSO
 # =============================================================================
 
 class Empresa(BasicModel):
     """
-    Representa uma empresa terceirizada.
+    Representa uma empresa (terceirizada ou instituição externa).
+    
+    Unifica Empresa e InstituicaoExterna do DER anterior.
     
     Relacionamentos:
     - Empresa (1) → (*) Terceirizado
+    - Empresa (1) → (*) Estagiario
     """
+    nome = models.CharField(
+        'Nome',
+        max_length=255,
+    )
     cnpj = models.CharField(
         'CNPJ',
         max_length=14,
         unique=True,
-        primary_key=True,
-    )
-    nome = models.CharField(
-        'Nome',
-        max_length=255,
     )
     is_active = models.BooleanField(
         'Ativo',
@@ -244,42 +245,37 @@ class Empresa(BasicModel):
 
     class Meta:
         db_table = 'empresas'
-        verbose_name = 'Empresa'
-        verbose_name_plural = 'Empresas'
+        verbose_name = 'Empresa/Instituição'
+        verbose_name_plural = 'Empresas/Instituições'
         ordering = ['nome']
 
     def __str__(self):
         return self.nome
 
 
-class InstituicaoExterna(BasicModel):
+class Curso(BasicModel):
     """
-    Representa uma instituição externa (para estagiários).
+    Representa um curso (para estagiários).
     
     Relacionamentos:
-    - InstituicaoExterna (1) → (*) Estagiario
+    - Curso (1) → (*) Estagiario
     """
-    cnpj = models.CharField(
-        'CNPJ',
-        max_length=14,
-        unique=True,
-        primary_key=True,
-    )
     nome = models.CharField(
         'Nome',
         max_length=255,
     )
-    is_active = models.BooleanField(
-        'Ativo',
-        default=True,
+    descricao = models.TextField(
+        'Descrição',
+        blank=True,
+        null=True,
     )
 
     objects = Base404ExceptionManager()
 
     class Meta:
-        db_table = 'instituicoes_externas'
-        verbose_name = 'Instituição Externa'
-        verbose_name_plural = 'Instituições Externas'
+        db_table = 'cursos'
+        verbose_name = 'Curso'
+        verbose_name_plural = 'Cursos'
         ordering = ['nome']
 
     def __str__(self):
@@ -287,21 +283,16 @@ class InstituicaoExterna(BasicModel):
 
 
 # =============================================================================
-# MODELS - SETOR E FUNÇÃO
+# MODELS - SETOR, ATIVIDADE E FUNÇÃO
 # =============================================================================
 
 class Setor(BasicModel):
     """
-    Representa um setor dentro de um campus.
+    Representa um setor dentro do campus.
     
     Relacionamentos:
-    - Setor (1) → (*) Funcao
-    
-    Exemplos (conforme diagrama):
-    - Setor de Saúde → Médico, Enfermeiro, Odontologista
-    - Direção → Diretor de ensino, Diretor geral
-    - Coordenações → Coordenador de TADS, Biologia, Matemática
-    - Rádio → Monitor da Rádio
+    - Setor (1) → (*) Atividade
+    - Setor (*) ↔ (*) Usuario (via UsuarioSetor)
     """
     nome = models.CharField(
         'Nome',
@@ -324,34 +315,51 @@ class Setor(BasicModel):
         return self.nome
 
 
-class Funcao(BasicModel):
+class Atividade(BasicModel):
     """
-    Representa uma função dentro de um setor.
+    Representa uma atividade dentro de um setor.
     
     Relacionamentos:
-    - Setor (1) → (*) Funcao
-    - Funcao (1) → (*) PessoaFuncao
-    
-    Exemplos (conforme diagrama):
-    - Setor de Saúde: Médico, Enfermeiro, Odontologista
-    - Direção: Diretor de ensino, Diretor geral
-    - Coordenações: Coordenador de TADS, Coordenador de Biologia
-    - Rádio: Monitor da Rádio
-    - Geral: Professor
+    - Setor (1) → (*) Atividade
+    - Atividade (1) → (*) Funcao
     """
     setor = models.ForeignKey(
         Setor,
         on_delete=models.PROTECT,
-        related_name='funcoes',
+        related_name='atividades',
         verbose_name='Setor',
     )
-    nome = models.CharField(
-        'Nome',
-        max_length=255,
+    descricao = models.TextField(
+        'Descrição',
     )
-    is_active = models.BooleanField(
-        'Ativo',
-        default=True,
+
+    objects = Base404ExceptionManager()
+
+    class Meta:
+        db_table = 'atividades'
+        verbose_name = 'Atividade'
+        verbose_name_plural = 'Atividades'
+        ordering = ['setor', 'descricao']
+
+    def __str__(self):
+        return f'{self.setor.nome} - {self.descricao[:50]}'
+
+
+class Funcao(BasicModel):
+    """
+    Representa uma função dentro de uma atividade.
+    
+    Relacionamentos:
+    - Atividade (1) → (*) Funcao
+    """
+    atividade = models.ForeignKey(
+        Atividade,
+        on_delete=models.PROTECT,
+        related_name='funcoes',
+        verbose_name='Atividade',
+    )
+    descricao = models.TextField(
+        'Descrição',
     )
 
     objects = Base404ExceptionManager()
@@ -360,46 +368,76 @@ class Funcao(BasicModel):
         db_table = 'funcoes'
         verbose_name = 'Função'
         verbose_name_plural = 'Funções'
-        ordering = ['setor', 'nome']
-        constraints = [
-            models.UniqueConstraint(
-                fields=['setor', 'nome'],
-                name='unique_funcao_por_setor'
-            )
-        ]
+        ordering = ['atividade', 'descricao']
 
     def __str__(self):
-        return f'{self.nome} - {self.setor.nome}'
+        return f'{self.atividade.setor.nome} - {self.descricao[:50]}'
 
 
 # =============================================================================
-# MODELS - PESSOA (BASE)
+# CUSTOM USER MANAGER
 # =============================================================================
 
-class Pessoa(BasicModel):
+class UsuarioManager(BaseUserManager, Base404ExceptionManager):
     """
-    Classe base para todas as pessoas no sistema.
+    Manager customizado para Usuario.
+    Combina BaseUserManager (para criação de usuários) com Base404ExceptionManager.
+    """
     
-    Esta é a entidade central do diagrama. Todas as pessoas (Servidor, 
-    Terceirizado, Aluno, Estagiário) herdam desta classe.
+    def create_user(self, cpf, nome, password=None, **extra_fields):
+        if not cpf:
+            raise ValueError('O CPF é obrigatório')
+        if not nome:
+            raise ValueError('O nome é obrigatório')
+        
+        user = self.model(
+            cpf=cpf,
+            nome=nome,
+            **extra_fields
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+    def create_superuser(self, cpf, nome, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_admin', True)
+        extra_fields.setdefault('is_active', True)
+        
+        return self.create_user(cpf, nome, password, **extra_fields)
+
+
+# =============================================================================
+# MODELS - USUARIO (BASE - Autenticação por CPF)
+# =============================================================================
+
+class Usuario(AbstractBaseUser, BasicModel):
+    """
+    Classe base para todos os usuários no sistema.
+    
+    AUTENTICAÇÃO POR CPF (não email).
+    
+    Esta é a entidade central do diagrama. Todos os tipos de pessoa
+    (Servidor, Terceirizado, Aluno, Estagiário) herdam desta classe.
     
     Relacionamentos:
-    - Campus (1) → (*) Pessoa
-    - Pessoa (1) → (*) Contato
-    - Pessoa (1) → (*) Endereco
-    - Pessoa (1) → (*) Matricula
-    - Pessoa (1) → (*) PessoaFuncao
+    - Campus (1) → (*) Usuario
+    - Usuario (1) → (*) Contato
+    - Usuario (1) → (*) Endereco
+    - Usuario (1) → (*) Matricula
+    - Usuario (*) ↔ (*) Setor (via UsuarioSetor)
     
-    Herança (subtipos):
-    - Pessoa ← Servidor
-    - Pessoa ← Terceirizado
-    - Pessoa ← Aluno
-    - Pessoa ← Estagiario
+    Herança (subtipos via OneToOne):
+    - Usuario ← Servidor
+    - Usuario ← Terceirizado
+    - Usuario ← Aluno
+    - Usuario ← Estagiario
     """
     campus = models.ForeignKey(
         Campus,
         on_delete=models.PROTECT,
-        related_name='pessoas',
+        related_name='usuarios',
         verbose_name='Campus',
     )
     nome = models.CharField(
@@ -411,12 +449,13 @@ class Pessoa(BasicModel):
         max_length=11,
         unique=True,
     )
-    data_de_nascimento = models.DateField(
+    data_nascimento = models.DateField(
         'Data de Nascimento',
     )
     data_ingresso = models.DateField(
         'Data de Ingresso',
-        default=timezone.now,
+        blank=True,
+        null=True,
     )
     is_active = models.BooleanField(
         'Ativo',
@@ -440,34 +479,113 @@ class Pessoa(BasicModel):
         null=True,
     )
 
-    objects = Base404ExceptionManager()
+    # Configuração do AbstractBaseUser
+    USERNAME_FIELD = 'cpf'
+    REQUIRED_FIELDS = ['nome']
+
+    objects = UsuarioManager()
 
     class Meta:
-        db_table = 'pessoas'
-        verbose_name = 'Pessoa'
-        verbose_name_plural = 'Pessoas'
+        db_table = 'usuarios'
+        verbose_name = 'Usuário'
+        verbose_name_plural = 'Usuários'
         ordering = ['nome']
 
     def __str__(self):
-        return self.nome
+        return f'{self.nome} ({self.cpf})'
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser or self.is_admin
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser or self.is_admin
 
 
 # =============================================================================
-# MODELS - CONTATO, ENDEREÇO E MATRÍCULA (Relacionados a Pessoa)
+# MODELS - USUARIO_SETOR (Tabela Associativa)
+# =============================================================================
+
+class UsuarioSetor(BasicModel):
+    """
+    Tabela associativa entre Usuario e Setor.
+    
+    Representa a associação de um usuário a um setor, com informações
+    sobre responsabilidade, monitor e datas.
+    
+    Relacionamentos:
+    - Usuario (*) ↔ (*) Setor
+    - UsuarioSetor → Campus (referência ao campus do setor)
+    """
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='usuario_setores',
+        verbose_name='Usuário',
+    )
+    setor = models.ForeignKey(
+        Setor,
+        on_delete=models.PROTECT,
+        related_name='usuario_setores',
+        verbose_name='Setor',
+    )
+    campus = models.ForeignKey(
+        Campus,
+        on_delete=models.PROTECT,
+        related_name='usuario_setores',
+        verbose_name='Campus',
+    )
+    e_responsavel = models.BooleanField(
+        'É Responsável',
+        default=False,
+    )
+    monitor = models.BooleanField(
+        'Monitor',
+        default=False,
+    )
+    data_entrada = models.DateField(
+        'Data de Entrada',
+        default=timezone.now,
+    )
+    data_saida = models.DateField(
+        'Data de Saída',
+        blank=True,
+        null=True,
+    )
+
+    objects = Base404ExceptionManager()
+
+    class Meta:
+        db_table = 'usuario_setor'
+        verbose_name = 'Usuário-Setor'
+        verbose_name_plural = 'Usuários-Setores'
+        ordering = ['usuario', 'setor']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['usuario', 'setor'],
+                name='unique_usuario_setor'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.usuario.nome} - {self.setor.nome}'
+
+
+# =============================================================================
+# MODELS - CONTATO, ENDEREÇO E MATRÍCULA (Relacionados a Usuario)
 # =============================================================================
 
 class Contato(BasicModel):
     """
-    Representa os contatos de uma pessoa (email, telefone).
+    Representa os contatos de um usuário (email, telefone).
     
     Relacionamentos:
-    - Pessoa (1) → (*) Contato
+    - Usuario (1) → (*) Contato
     """
-    pessoa = models.ForeignKey(
-        Pessoa,
+    usuario = models.ForeignKey(
+        Usuario,
         on_delete=models.CASCADE,
         related_name='contatos',
-        verbose_name='Pessoa',
+        verbose_name='Usuário',
     )
     email = models.EmailField(
         'Email',
@@ -487,24 +605,24 @@ class Contato(BasicModel):
         db_table = 'contatos'
         verbose_name = 'Contato'
         verbose_name_plural = 'Contatos'
-        ordering = ['pessoa', '-created_at']
+        ordering = ['usuario', '-created_at']
 
     def __str__(self):
-        return f'{self.pessoa.nome} - {self.email or self.telefone}'
+        return f'{self.usuario.nome} - {self.email or self.telefone}'
 
 
 class Endereco(BasicModel):
     """
-    Representa os endereços de uma pessoa.
+    Representa os endereços de um usuário.
     
     Relacionamentos:
-    - Pessoa (1) → (*) Endereco
+    - Usuario (1) → (*) Endereco
     """
-    pessoa = models.ForeignKey(
-        Pessoa,
+    usuario = models.ForeignKey(
+        Usuario,
         on_delete=models.CASCADE,
         related_name='enderecos',
-        verbose_name='Pessoa',
+        verbose_name='Usuário',
     )
     logradouro = models.CharField(
         'Logradouro',
@@ -518,14 +636,9 @@ class Endereco(BasicModel):
         'CEP',
         max_length=8,
     )
-    complemento = models.CharField(
-        'Complemento',
-        max_length=255,
-        blank=True,
-        null=True,
-    )
-    num_casa = models.IntegerField(
+    num_casa = models.CharField(
         'Número',
+        max_length=20,
     )
     cidade = models.CharField(
         'Cidade',
@@ -542,18 +655,18 @@ class Endereco(BasicModel):
         db_table = 'enderecos'
         verbose_name = 'Endereço'
         verbose_name_plural = 'Endereços'
-        ordering = ['pessoa', '-created_at']
+        ordering = ['usuario', '-created_at']
 
     def __str__(self):
-        return f'{self.pessoa.nome} - {self.logradouro}, {self.num_casa}'
+        return f'{self.usuario.nome} - {self.logradouro}, {self.num_casa}'
 
 
 class Matricula(BasicModel):
     """
-    Representa as matrículas/carteirinhas de uma pessoa.
+    Representa as matrículas/carteirinhas de um usuário.
     
     Relacionamentos:
-    - Pessoa (1) → (*) Matricula
+    - Usuario (1) → (*) Matricula
     """
     matricula = models.CharField(
         'Número da Matrícula',
@@ -561,11 +674,11 @@ class Matricula(BasicModel):
         unique=True,
         primary_key=True,
     )
-    pessoa = models.ForeignKey(
-        Pessoa,
+    usuario = models.ForeignKey(
+        Usuario,
         on_delete=models.CASCADE,
         related_name='matriculas',
-        verbose_name='Pessoa',
+        verbose_name='Usuário',
     )
     data_validade = models.DateField(
         'Data de Validade',
@@ -585,116 +698,58 @@ class Matricula(BasicModel):
         db_table = 'matriculas'
         verbose_name = 'Matrícula'
         verbose_name_plural = 'Matrículas'
-        ordering = ['pessoa', '-data_expedicao']
+        ordering = ['usuario', '-data_expedicao']
 
     def __str__(self):
-        return f'{self.pessoa.nome} - {self.matricula}'
+        return f'{self.usuario.nome} - {self.matricula}'
 
 
 # =============================================================================
-# MODELS - PESSOA_FUNCAO (Tabela Associativa)
-# =============================================================================
-
-class PessoaFuncao(BasicModel):
-    """
-    Tabela associativa entre Pessoa e Função.
-    
-    Representa as funções que uma pessoa exerce em setores específicos.
-    
-    Relacionamentos:
-    - Pessoa (1) → (*) PessoaFuncao
-    - Funcao (1) → (*) PessoaFuncao
-    
-    Atributos próprios:
-    - setores_e_funcoes: dict relacionando setores e funções
-    - data_inicio: quando a pessoa começou a exercer a função
-    - is_active: se a função ainda está ativa
-    """
-    pessoa = models.ForeignKey(
-        Pessoa,
-        on_delete=models.CASCADE,
-        related_name='pessoa_funcoes',
-        verbose_name='Pessoa',
-    )
-    funcao = models.ForeignKey(
-        Funcao,
-        on_delete=models.PROTECT,
-        related_name='pessoa_funcoes',
-        verbose_name='Função',
-    )
-    setores_e_funcoes = models.JSONField(
-        'Setores e Funções',
-        default=dict,
-        blank=True,
-        help_text='Dict com mapeamento de setores e funções exercidas',
-    )
-    data_inicio = models.DateField(
-        'Data de Início',
-        default=timezone.now,
-    )
-    is_active = models.BooleanField(
-        'Ativo',
-        default=True,
-    )
-
-    objects = Base404ExceptionManager()
-
-    class Meta:
-        db_table = 'pessoa_funcoes'
-        verbose_name = 'Pessoa-Função'
-        verbose_name_plural = 'Pessoas-Funções'
-        ordering = ['pessoa', 'funcao']
-        constraints = [
-            models.UniqueConstraint(
-                fields=['pessoa', 'funcao'],
-                name='unique_pessoa_funcao'
-            )
-        ]
-
-    def __str__(self):
-        return f'{self.pessoa.nome} - {self.funcao.nome}'
-
-
-# =============================================================================
-# MODELS - SERVIDOR (Herança de Pessoa)
+# MODELS - SERVIDOR (Herança de Usuario)
 # =============================================================================
 
 class Servidor(BasicModel):
     """
     Representa um servidor da instituição.
     
-    Herança:
-    - Pessoa ← Servidor
+    Herança via OneToOne:
+    - Usuario ← Servidor
     
-    Subtipos:
-    - Servidor ← Professor
-    - Servidor ← TecnicoAdministrativo
+    Campos do DER:
+    - data_posse
+    - jornada_trabalho (INTEGER)
+    - padrao (VARCHAR)
+    - classe (VARCHAR)
+    - tipo_servidor (VARCHAR)
     """
-    pessoa = models.OneToOneField(
-        Pessoa,
+    usuario = models.OneToOneField(
+        Usuario,
         on_delete=models.CASCADE,
         related_name='servidor',
-        verbose_name='Pessoa',
+        verbose_name='Usuário',
         primary_key=True,
     )
-    numero_siape = models.CharField(
-        'Número SIAPE',
-        max_length=20,
-        unique=True,
+    data_posse = models.DateField(
+        'Data de Posse',
     )
-    data_admissao = models.DateField(
-        'Data de Admissão',
+    jornada_trabalho = models.IntegerField(
+        'Jornada de Trabalho',
+        choices=JORNADA_OPCOES,
+        default=JORNADA_40,
+        help_text='Horas semanais (0 = Dedicação Exclusiva)',
     )
-    salario_base = models.DecimalField(
-        'Salário Base',
-        max_digits=10,
-        decimal_places=2,
+    padrao = models.CharField(
+        'Padrão',
+        max_length=50,
     )
-    carga_horaria = models.CharField(
-        'Carga Horária',
-        max_length=10,
-        choices=CARGA_HORARIA_OPCOES,
-        default=CARGA_HORARIA_40,
+    classe = models.CharField(
+        'Classe',
+        max_length=50,
+    )
+    tipo_servidor = models.CharField(
+        'Tipo de Servidor',
+        max_length=100,
+        help_text='Ex: Professor, Técnico Administrativo, etc.',
     )
 
     objects = Base404ExceptionManager()
@@ -703,107 +758,31 @@ class Servidor(BasicModel):
         db_table = 'servidores'
         verbose_name = 'Servidor'
         verbose_name_plural = 'Servidores'
-        ordering = ['pessoa__nome']
+        ordering = ['usuario__nome']
 
     def __str__(self):
-        return f'{self.pessoa.nome} - SIAPE: {self.numero_siape}'
-
-
-class Professor(BasicModel):
-    """
-    Representa um professor (subtipo de Servidor).
-    
-    Herança:
-    - Servidor ← Professor
-    """
-    servidor = models.OneToOneField(
-        Servidor,
-        on_delete=models.CASCADE,
-        related_name='professor',
-        verbose_name='Servidor',
-        primary_key=True,
-    )
-    titulo = models.CharField(
-        'Título',
-        max_length=20,
-        choices=TITULO_OPCOES,
-        default=TITULO_GRADUADO,
-    )
-    area_atuacao = models.CharField(
-        'Área de Atuação',
-        max_length=255,
-    )
-    classe = models.CharField(
-        'Classe',
-        max_length=20,
-        choices=CLASSE_OPCOES,
-        default=CLASSE_D,
-    )
-
-    objects = Base404ExceptionManager()
-
-    class Meta:
-        db_table = 'professores'
-        verbose_name = 'Professor'
-        verbose_name_plural = 'Professores'
-        ordering = ['servidor__pessoa__nome']
-
-    def __str__(self):
-        return f'Prof. {self.servidor.pessoa.nome} - {self.get_titulo_display()}'
-
-
-class TecnicoAdministrativo(BasicModel):
-    """
-    Representa um técnico administrativo (subtipo de Servidor).
-    
-    Herança:
-    - Servidor ← TecnicoAdministrativo
-    """
-    servidor = models.OneToOneField(
-        Servidor,
-        on_delete=models.CASCADE,
-        related_name='tecnico_administrativo',
-        verbose_name='Servidor',
-        primary_key=True,
-    )
-    nivel = models.CharField(
-        'Nível',
-        max_length=5,
-        choices=NIVEL_OPCOES,
-        default=NIVEL_D,
-    )
-
-    objects = Base404ExceptionManager()
-
-    class Meta:
-        db_table = 'tecnicos_administrativos'
-        verbose_name = 'Técnico Administrativo'
-        verbose_name_plural = 'Técnicos Administrativos'
-        ordering = ['servidor__pessoa__nome']
-
-    def __str__(self):
-        return f'{self.servidor.pessoa.nome} - {self.get_nivel_display()}'
+        return f'{self.usuario.nome} - {self.tipo_servidor}'
 
 
 # =============================================================================
-# MODELS - TERCEIRIZADO (Herança de Pessoa)
+# MODELS - TERCEIRIZADO (Herança de Usuario)
 # =============================================================================
 
 class Terceirizado(BasicModel):
     """
     Representa um funcionário terceirizado.
     
-    Herança:
-    - Pessoa ← Terceirizado
+    Herança via OneToOne:
+    - Usuario ← Terceirizado
     
     Relacionamentos:
     - Empresa (1) → (*) Terceirizado
     """
-    pessoa = models.OneToOneField(
-        Pessoa,
+    usuario = models.OneToOneField(
+        Usuario,
         on_delete=models.CASCADE,
         related_name='terceirizado',
-        verbose_name='Pessoa',
+        verbose_name='Usuário',
         primary_key=True,
     )
     empresa = models.ForeignKey(
@@ -811,10 +790,6 @@ class Terceirizado(BasicModel):
         on_delete=models.PROTECT,
         related_name='terceirizados',
         verbose_name='Empresa',
-    )
-    matricula_externa = models.CharField(
-        'Matrícula Externa',
-        max_length=50,
     )
     data_inicio_contrato = models.DateField(
         'Data de Início do Contrato',
@@ -831,34 +806,39 @@ class Terceirizado(BasicModel):
         db_table = 'terceirizados'
         verbose_name = 'Terceirizado'
         verbose_name_plural = 'Terceirizados'
-        ordering = ['pessoa__nome']
+        ordering = ['usuario__nome']
 
     def __str__(self):
-        return f'{self.pessoa.nome} - {self.empresa.nome}'
+        return f'{self.usuario.nome} - {self.empresa.nome}'
 
 
 # =============================================================================
-# MODELS - ALUNO (Herança de Pessoa)
+# MODELS - ALUNO (Herança de Usuario)
 # =============================================================================
 
 class Aluno(BasicModel):
     """
     Representa um aluno da instituição.
     
-    Herança:
-    - Pessoa ← Aluno
+    Herança via OneToOne:
+    - Usuario ← Aluno
     
-    Subtipos:
-    - Aluno ← Egresso
-    
-    Relacionamentos:
-    - Aluno (1) → (*) Estagiario (um aluno pode ter vários estágios)
+    Campos do DER:
+    - ira (DOUBLE)
+    - forma_ingresso (VARCHAR)
+    - previsao_conclusao (INTEGER)
+    - aluno_especial (BOOLEAN)
+    - turno (VARCHAR)
+    - is_active (BOOLEAN)
+    - ano_conclusao (INTEGER)
+    - data_colacao (DATE)
+    - data_expedicao_diploma (DATE)
     """
-    pessoa = models.OneToOneField(
-        Pessoa,
+    usuario = models.OneToOneField(
+        Usuario,
         on_delete=models.CASCADE,
         related_name='aluno',
-        verbose_name='Pessoa',
+        verbose_name='Usuário',
         primary_key=True,
     )
     ira = models.DecimalField(
@@ -888,11 +868,25 @@ class Aluno(BasicModel):
         choices=TURNO_OPCOES,
         default=TURNO_INTEGRAL,
     )
-    situacao_sistema = models.CharField(
-        'Situação no Sistema',
-        max_length=20,
-        choices=SITUACAO_ALUNO_OPCOES,
-        default=SITUACAO_ALUNO_MATRICULADO,
+    is_active = models.BooleanField(
+        'Ativo',
+        default=True,
+    )
+    # Campos de conclusão (quando o aluno se forma)
+    ano_conclusao = models.IntegerField(
+        'Ano de Conclusão',
+        blank=True,
+        null=True,
+    )
+    data_colacao = models.DateField(
+        'Data de Colação',
+        blank=True,
+        null=True,
+    )
+    data_expedicao_diploma = models.DateField(
+        'Data de Expedição do Diploma',
+        blank=True,
+        null=True,
     )
 
     objects = Base404ExceptionManager()
@@ -901,95 +895,67 @@ class Aluno(BasicModel):
         db_table = 'alunos'
         verbose_name = 'Aluno'
         verbose_name_plural = 'Alunos'
-        ordering = ['pessoa__nome']
+        ordering = ['usuario__nome']
 
     def __str__(self):
-        return f'{self.pessoa.nome} - {self.get_situacao_sistema_display()}'
+        return f'{self.usuario.nome} - IRA: {self.ira}'
 
-
-class Egresso(BasicModel):
-    """
-    Representa um ex-aluno (egresso) da instituição.
-    
-    Herança:
-    - Aluno ← Egresso
-    
-    Um egresso é um aluno que já concluiu o curso.
-    """
-    aluno = models.OneToOneField(
-        Aluno,
-        on_delete=models.CASCADE,
-        related_name='egresso',
-        verbose_name='Aluno',
-        primary_key=True,
-    )
-    ano_conclusao = models.IntegerField(
-        'Ano de Conclusão',
-    )
-    data_formatura = models.DateField(
-        'Data de Formatura',
-    )
-
-    objects = Base404ExceptionManager()
-
-    class Meta:
-        db_table = 'egressos'
-        verbose_name = 'Egresso'
-        verbose_name_plural = 'Egressos'
-        ordering = ['aluno__pessoa__nome']
-
-    def __str__(self):
-        return f'{self.aluno.pessoa.nome} - Formado em {self.ano_conclusao}'
+    @property
+    def is_formado(self):
+        """Verifica se o aluno já se formou."""
+        return self.ano_conclusao is not None
 
 
 # =============================================================================
-# MODELS - ESTAGIÁRIO (Herança de Pessoa, relacionado a Aluno)
+# MODELS - ESTAGIÁRIO (Herança de Usuario)
 # =============================================================================
 
 class Estagiario(BasicModel):
     """
     Representa um estagiário na instituição.
     
-    Herança:
-    - Pessoa ← Estagiario
+    Herança via OneToOne:
+    - Usuario ← Estagiario
     
     Relacionamentos:
-    - Aluno (1) → (*) Estagiario (um aluno pode ter vários estágios)
-    - InstituicaoExterna (1) → (*) Estagiario
+    - Empresa (1) → (*) Estagiario
+    - Curso (1) → (*) Estagiario
     
-    Nota: Estagiário é um papel que uma pessoa (geralmente aluno) pode ter,
-    não necessariamente herança direta de Aluno conforme o DER.
+    Campos do DER:
+    - carga_horaria (INTEGER)
+    - data_inicio_estagio (DATE)
+    - data_fim_estagio (DATE)
     """
-    pessoa = models.OneToOneField(
-        Pessoa,
+    usuario = models.OneToOneField(
+        Usuario,
         on_delete=models.CASCADE,
         related_name='estagiario',
-        verbose_name='Pessoa',
+        verbose_name='Usuário',
         primary_key=True,
     )
-    instituicao_externa = models.ForeignKey(
-        InstituicaoExterna,
+    empresa = models.ForeignKey(
+        Empresa,
         on_delete=models.PROTECT,
         related_name='estagiarios',
-        verbose_name='Instituição Externa',
+        verbose_name='Empresa/Instituição',
     )
-    matricula_externa = models.CharField(
-        'Matrícula Externa',
-        max_length=50,
-    )
-    curso = models.CharField(
-        'Curso',
-        max_length=255,
+    curso = models.ForeignKey(
+        Curso,
+        on_delete=models.PROTECT,
+        related_name='estagiarios',
+        verbose_name='Curso',
     )
     carga_horaria = models.IntegerField(
         'Carga Horária',
         help_text='Carga horária semanal do estágio',
     )
-    data_inicio = models.DateField(
-        'Data de Início',
+    data_inicio_estagio = models.DateField(
+        'Data de Início do Estágio',
     )
-    data_fim = models.DateField(
-        'Data de Fim',
+    data_fim_estagio = models.DateField(
+        'Data de Fim do Estágio',
+        blank=True,
+        null=True,
     )
 
     objects = Base404ExceptionManager()
@@ -998,10 +964,10 @@ class Estagiario(BasicModel):
         db_table = 'estagiarios'
         verbose_name = 'Estagiário'
         verbose_name_plural = 'Estagiários'
-        ordering = ['pessoa__nome']
+        ordering = ['usuario__nome']
 
     def __str__(self):
-        return f'{self.pessoa.nome} - {self.curso}'
+        return f'{self.usuario.nome} - {self.curso.nome}'
 
 
 # =============================================================================
@@ -1012,64 +978,81 @@ class Estagiario(BasicModel):
 RESUMO PARA CRIAÇÃO DOS APPS
 =============================================================================
 
-1. APP: campus
+1. APP: usuarios (já existe - adaptar)
+   - Models: Usuario (login por CPF), Contato, Endereco, Matricula
+   - Dependências: campus
+
+2. APP: campus
    - Models: Campus
    - Dependências: Nenhuma
 
-2. APP: empresas
-   - Models: Empresa, InstituicaoExterna
+3. APP: cargos
+   - Models: Cargo
    - Dependências: Nenhuma
 
-3. APP: setores
-   - Models: Setor, Funcao
+4. APP: empresas
+   - Models: Empresa, Curso
    - Dependências: Nenhuma
 
-4. APP: pessoas
-   - Models: Pessoa, Contato, Endereco, Matricula, PessoaFuncao
-   - Dependências: campus, setores
+5. APP: setores
+   - Models: Setor, Atividade, Funcao, UsuarioSetor
+   - Dependências: usuarios, campus
 
-5. APP: servidores
-   - Models: Servidor, Professor, TecnicoAdministrativo
-   - Dependências: pessoas
+6. APP: servidores
+   - Models: Servidor
+   - Dependências: usuarios
 
-6. APP: alunos
-   - Models: Aluno, Egresso
-   - Dependências: pessoas
+7. APP: alunos
+   - Models: Aluno
+   - Dependências: usuarios
 
-7. APP: terceirizados
+8. APP: terceirizados
    - Models: Terceirizado
-   - Dependências: pessoas, empresas
+   - Dependências: usuarios, empresas
 
-8. APP: estagiarios
+9. APP: estagiarios
    - Models: Estagiario
-   - Dependências: pessoas, empresas
+   - Dependências: usuarios, empresas
 
 =============================================================================
 ORDEM DE CRIAÇÃO SUGERIDA (Baseada nas dependências):
 =============================================================================
 
 1. campus (sem dependências)
-2. empresas (sem dependências)  
-3. setores (sem dependências)
-4. pessoas (depende de campus, setores)
-5. servidores (depende de pessoas)
-6. alunos (depende de pessoas)
-7. terceirizados (depende de pessoas, empresas)
-8. estagiarios (depende de pessoas, empresas)
+2. cargos (sem dependências)
+3. empresas (sem dependências) - inclui Empresa e Curso
+4. usuarios (depende de campus) - Usuario, Contato, Endereco, Matricula
+5. setores (depende de usuarios, campus) - Setor, Atividade, Funcao, UsuarioSetor
+6. servidores (depende de usuarios)
+7. alunos (depende de usuarios)
+8. terceirizados (depende de usuarios, empresas)
+9. estagiarios (depende de usuarios, empresas)
 
 =============================================================================
 DIAGRAMA DE HERANÇA (RESUMO):
 =============================================================================
 
-                    Pessoa
+                    Usuario
                        │
-        ┌──────────────┼──────────────┐
-        │              │              │
-    Servidor      Terceirizado     Aluno ────── Estagiario
-        │                             │
-   ┌────┴────┐                    Egresso
-   │         │
-Professor  TecnicoAdministrativo
+        ┌──────────────┼──────────────┬──────────────┐
+        │              │              │              │
+    Servidor      Terceirizado     Aluno       Estagiario
+
+=============================================================================
+RELACIONAMENTOS MANY-TO-MANY:
+=============================================================================
+
+Usuario ←──[UsuarioSetor]──→ Setor
+           │
+           └── e_responsavel, monitor, data_entrada, data_saida, campus
+
+=============================================================================
+AUTENTICAÇÃO:
+=============================================================================
+
+- USERNAME_FIELD = 'cpf'
+- Criação de usuários via JSON por admin (não auto-cadastro)
+- Suporte a criação individual ou em lote
 
 =============================================================================
 """
