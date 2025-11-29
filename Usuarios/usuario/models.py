@@ -1,14 +1,9 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
-from django.utils import timezone
 
-from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BaseUserManager, BasicModel, Base404ExceptionManager
 from AppCore.core.helpers.helpers_mixin import ModelHelperMixin
 from AppCore.core.business.business_mixin import ModelBusinessMixin
-
-from .business import UsuarioBusiness
-from .helpers import UsuarioHelper
-from . import choices
 
 
 class UsuarioManager(BaseUserManager, Base404ExceptionManager):
@@ -64,7 +59,7 @@ class Usuario(ModelHelperMixin, ModelBusinessMixin, PermissionsMixin, AbstractBa
     - Usuario ← Estagiario
     """
     campus = models.ForeignKey(
-        Campus,
+        "campus.Campus",
         on_delete=models.PROTECT,
         related_name='usuarios',
         verbose_name='Campus',
@@ -102,7 +97,7 @@ class Usuario(ModelHelperMixin, ModelBusinessMixin, PermissionsMixin, AbstractBa
         'Superusuário',
         default=False,
     )
-    ultimo_login = models.DateField(
+    last_login = models.DateField(
         'Último Login',
         blank=True,
         null=True,
@@ -116,7 +111,7 @@ class Usuario(ModelHelperMixin, ModelBusinessMixin, PermissionsMixin, AbstractBa
     class Meta:
         db_table = 'usuarios'
         verbose_name = 'Usuário'
-        verbose_name_plural = 'Usuários'
+        verbose_name_plural = 'Usurios'
         ordering = ['nome']
 
     def __str__(self):
@@ -166,3 +161,90 @@ class CodigoRedefinicaoSenha(BasicModel):
                 fields=["usuario", "codigo"], name="unique_code_user_constraint"
             )
         ]
+
+
+class Contato(BasicModel):
+    """
+    Representa os contatos de um usuário (email, telefone).
+    
+    Relacionamentos:
+    - Usuario (1) → (*) Contato
+    """
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='contatos',
+        verbose_name='Usuário',
+    )
+    email = models.EmailField(
+        'Email',
+        blank=True,
+        null=True,
+    )
+    telefone = models.CharField(
+        'Telefone',
+        max_length=20,
+        blank=True,
+        null=True,
+    )
+
+    objects = Base404ExceptionManager()
+
+    class Meta:
+        db_table = 'contatos'
+        verbose_name = 'Contato'
+        verbose_name_plural = 'Contatos'
+        ordering = ['usuario', '-created_at']
+
+    def __str__(self):
+        return f'{self.usuario.nome} - {self.email or self.telefone}'
+
+
+class Endereco(BasicModel):
+    """
+    Representa os endereços de um usuário.
+    
+    Relacionamentos:
+    - Usuario (1) → (*) Endereco
+    """
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='enderecos',
+        verbose_name='Usuário',
+    )
+    logradouro = models.CharField(
+        'Logradouro',
+        max_length=255,
+    )
+    bairro = models.CharField(
+        'Bairro',
+        max_length=255,
+    )
+    cep = models.CharField(
+        'CEP',
+        max_length=8,
+    )
+    num_casa = models.CharField(
+        'Número',
+        max_length=20,
+    )
+    cidade = models.CharField(
+        'Cidade',
+        max_length=255,
+    )
+    estado = models.CharField(
+        'Estado',
+        max_length=2,
+    )
+
+    objects = Base404ExceptionManager()
+
+    class Meta:
+        db_table = 'enderecos'
+        verbose_name = 'Endereço'
+        verbose_name_plural = 'Endereços'
+        ordering = ['usuario', '-created_at']
+
+    def __str__(self):
+        return f'{self.usuario.nome} - {self.logradouro}, {self.num_casa}'

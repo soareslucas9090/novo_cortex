@@ -78,8 +78,18 @@ AUTH_APPS = [
 ]
 
 USERS_APPS = [
-    'Usuarios.usuarios',
+    ################## - Módulo Usuarios - ##################
+    'Usuarios.usuario',
     'Usuarios.conta',
+    'Usuarios.usuario_setor',
+    ##########################################################
+    
+    ################## - Módulo Perfis - ###################
+    'Perfis.aluno',
+    'Perfis.servidor',
+    'Perfis.terceirizado',
+    'Pefis.estagiario',
+    ##########################################################
 ]
 
 INSTALLED_APPS = DEFAULT_ROOT_APPS + AUTH_APPS + USERS_APPS

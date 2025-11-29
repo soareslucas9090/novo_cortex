@@ -6,7 +6,7 @@ from AppCore.common.util.util import enviar_email_simples
 from AppCore.common.textos.emails import EMAIL_CRIAR_CONTA, EMAIL_RESETAR_SENHA_CONTA
 
 from BaseDRFApp import settings
-from Usuarios.usuarios.models import Usuario
+from Usuarios.usuario.models import Usuario
 from .models import CodigoEmailConta
 from .rules import ContaRule
 from .helpers import ContaHelper

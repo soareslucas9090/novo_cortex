@@ -1,6 +1,6 @@
 from rest_framework.permissions import AllowAny, BasePermission
 
-from Usuarios.usuarios import choices
+from Usuarios.usuario import choices
 
 
 class AllowAnyPermission(AllowAny):

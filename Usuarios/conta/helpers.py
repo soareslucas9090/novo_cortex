@@ -8,7 +8,7 @@ from .models import CodigoEmailConta
 
 class ContaHelper(ModelInstanceHelpers):
     def usuario_com_email_e_tipo_perfil_existe(self, email, tipo_perfil):
-        from Usuarios.usuarios.models import Usuario
+        from Usuarios.usuario.models import Usuario
         
         return Usuario.objects.filter(email=email, perfis__tipo=tipo_perfil).exists()
 

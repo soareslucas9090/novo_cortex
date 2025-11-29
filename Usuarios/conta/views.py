@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from AppCore.core.exceptions.exceptions import NotFoundException
 from AppCore.basics.views.basic_views import BasicPostAPIView
 from AppCore.basics.mixins.mixins import AllowAnyMixin
-from Usuarios.usuarios.models import Usuario
+from Usuarios.usuario.models import Usuario
 
 from .serializers import (
     CriarContaSerializer, ConfirmarCodigoCriarContaSerializer,
