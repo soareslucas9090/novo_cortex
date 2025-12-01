@@ -20,7 +20,10 @@ REST_FRAMEWORK = {
     ],
 }
 
-signing_key = os.environ.get('SIMPLE_JWT_SIGNING_KEY')
+signing_key = os.environ.get(
+    'SIMPLE_JWT_SIGNING_KEY',
+    '1234567890qwertyuiopasdfghjklzxcvbnm!@#$%^&*()QWERTYUIOPASDFGHJKLZXCVBNM'
+)
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
