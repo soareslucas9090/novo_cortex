@@ -1,6 +1,6 @@
 from django.urls import path
 
-app_name = 'empresa'
+app_name = 'matricula'
 
 urlpatterns = [
 ]

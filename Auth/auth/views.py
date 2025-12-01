@@ -5,12 +5,10 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
-from .serializers import TokenPersonalizadoSerializer
-
 
 @extend_schema(tags=["Auth"])
 class ObterParTokenViewDOC(TokenObtainPairView):
-    serializer_class = TokenPersonalizadoSerializer
+    pass
 
 
 @extend_schema(tags=["Auth"])

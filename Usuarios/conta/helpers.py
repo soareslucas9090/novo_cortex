@@ -7,10 +7,6 @@ from .models import CodigoEmailConta
 
 
 class ContaHelper(ModelInstanceHelpers):
-    def usuario_com_email_e_tipo_perfil_existe(self, email, tipo_perfil):
-        from Usuarios.usuario.models import Usuario
-        
-        return Usuario.objects.filter(email=email, perfis__tipo=tipo_perfil).exists()
 
     def deletar_codigos_expirados(self, email=None):
         if self.object_instance or email:
@@ -27,13 +23,3 @@ class ContaHelper(ModelInstanceHelpers):
         
         else:
             raise SystemErrorException('Parâmetros insuficientes para deletar códigos expirados.')
-        
-    def validar_codigo_valido(self, email, codigo):
-        try:
-            codigo_email_conta = CodigoEmailConta.objects.get(
-            email=email, codigo=codigo, esta_validado=True
-            )
-            
-            codigo_email_conta.delete()
-        except Exception as e:
-            raise e

@@ -10,43 +10,11 @@ from AppCore.basics.mixins.mixins import AllowAnyMixin
 from Usuarios.usuario.models import Usuario
 
 from .serializers import (
-    CriarContaSerializer, ConfirmarCodigoCriarContaSerializer,
     ConfirmarSenhaCriarContaSerializer, EsqueceuSenhaSolicitarSerializer,
-    EsqueceuSenhaConfirmarSerializer
 )
 from .business import ContaBusiness
 
 
-@extend_schema(tags=["Usuarios.Create conta"])
-class CriarContaPostView(BasicPostAPIView, AllowAnyMixin):
-    serializer_class = CriarContaSerializer
-    mensagem_sucesso = "Código de verificação enviado para o email informado."
-    
-    def do_action_post(self, serializer, request):
-        email = serializer.get('email')
-        tipo_perfil = serializer.get('tipo_perfil')
-        
-        conta_business = ContaBusiness()
-
-        codigo_email_conta = conta_business.obter_codigo(email, tipo_perfil)
-
-        conta_business.enviar_email_verificacao(email, codigo_email_conta)
-
-
-@extend_schema(tags=["Usuarios.Create conta"])       
-class ConfirmarCodigoCriarContaPostView(BasicPostAPIView, AllowAnyMixin):
-    serializer_class = ConfirmarCodigoCriarContaSerializer
-    mensagem_sucesso = "Código verificado. Você pode prosseguir com a criação da conta."
-    
-    def do_action_post(self, serializer, request):
-        email = serializer.get('email')
-        codigo = serializer.get('codigo')
-        
-        conta_business = ContaBusiness()
-        
-        conta_business.validar_codigo(email=email, codigo=codigo)
-
-        
 @extend_schema(tags=["Usuarios.Create conta"])
 class ConfirmarSenhaContaPostView(BasicPostAPIView, AllowAnyMixin):
     serializer_class = ConfirmarSenhaCriarContaSerializer
