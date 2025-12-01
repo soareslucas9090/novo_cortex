@@ -88,11 +88,28 @@ USERS_APPS = [
     'Perfis.aluno',
     'Perfis.servidor',
     'Perfis.terceirizado',
-    'Pefis.estagiario',
+    'Perfis.estagiario',
     ##########################################################
 ]
 
-INSTALLED_APPS = DEFAULT_ROOT_APPS + AUTH_APPS + USERS_APPS
+ESTRUTURA_APPS = [
+    ########### - Módulo EstruturaOrganizacional - ###########
+    'EstruturaOrganizacional.campus',
+    'EstruturaOrganizacional.setor',
+    'EstruturaOrganizacional.atividade',
+    'EstruturaOrganizacional.funcao',
+    'EstruturaOrganizacional.empresa',
+    'EstruturaOrganizacional.curso',
+    ##########################################################
+]
+
+VINCULOS_APPS = [
+    ################## - Módulo Vinculos - ###################
+    'Vinculos.matricula',
+    ##########################################################
+]
+
+INSTALLED_APPS = DEFAULT_ROOT_APPS + AUTH_APPS + USERS_APPS + ESTRUTURA_APPS + VINCULOS_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

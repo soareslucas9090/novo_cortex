@@ -9,36 +9,8 @@ from AppCore.basics.views.basic_views import BasicPostAPIView
 from AppCore.basics.mixins.mixins import AllowAnyMixin
 from Usuarios.usuario.models import Usuario
 
-from .serializers import (
-    ConfirmarSenhaCriarContaSerializer, EsqueceuSenhaSolicitarSerializer,
-)
+from .serializers import EsqueceuSenhaSolicitarSerializer
 from .business import ContaBusiness
-
-
-@extend_schema(tags=["Usuarios.Create conta"])
-class ConfirmarSenhaContaPostView(BasicPostAPIView, AllowAnyMixin):
-    serializer_class = ConfirmarSenhaCriarContaSerializer
-    mensagem_sucesso = "Usuário criado com sucesso."
-    
-    def do_action_post(self, serializer, request):
-        email = serializer.get('email')
-        codigo = serializer.get('codigo')
-        senha = serializer.get('senha')
-        telefone = serializer.get('telefone')
-        data_nascimento = serializer.get('data_nascimento')
-        tipo_perfil = serializer.get('tipo_perfil')
-        bio = serializer.get('bio')
-        nome = serializer.get('nome')
-        
-        conta_business = ContaBusiness()
-        conta_business.criar_conta_usuario(
-            email, codigo, nome, senha, telefone, data_nascimento, tipo_perfil, bio
-        )
-        
-        return {
-            'message': 'Usuário criado com sucesso.',
-            'status_code': status.HTTP_201_CREATED
-        }
 
 
 @extend_schema(tags=["Usuarios.Password reset"])

@@ -20,7 +20,7 @@ class Servidor(BasicModel):
     - tipo_servidor (VARCHAR)
     """
     usuario = models.OneToOneField(
-        "usuario.Usuario",
+        'usuarios.Usuario',
         on_delete=models.CASCADE,
         related_name='servidor',
         verbose_name='Usuário',

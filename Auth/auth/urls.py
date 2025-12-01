@@ -1,14 +1,14 @@
 from django.urls import path
 from .views import (
-    ObterParTokenViewDOC,
-    AtualizarTokenViewDOC,
-    VerificarTokenViewDOC,
+    LoginView,
+    AtualizarTokenView,
+    VerificarTokenView,
 )
 
 app_name = 'token-jwt'
 
 urlpatterns = [
-    path('', ObterParTokenViewDOC.as_view(), name='token-obtain-pair'),
-    path('refresh/', AtualizarTokenViewDOC.as_view(), name='token-refresh'),
-    path('verify/', VerificarTokenViewDOC.as_view(), name='token-verify'),
+    path('', LoginView.as_view(), name='login'),
+    path('refresh/', AtualizarTokenView.as_view(), name='token-refresh'),
+    path('verify/', VerificarTokenView.as_view(), name='token-verify'),
 ]

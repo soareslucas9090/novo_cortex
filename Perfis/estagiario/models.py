@@ -20,7 +20,7 @@ class Estagiario(BasicModel):
     - data_fim_estagio (DATE)
     """
     usuario = models.OneToOneField(
-        "usuario.Usuario",
+        'usuarios.Usuario',
         on_delete=models.CASCADE,
         related_name='estagiario',
         verbose_name='Usuário',

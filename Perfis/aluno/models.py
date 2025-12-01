@@ -24,7 +24,7 @@ class Aluno(BasicModel):
     - data_expedicao_diploma (DATE)
     """
     usuario = models.OneToOneField(
-        "usuario.Usuario",
+        'usuarios.Usuario',
         on_delete=models.CASCADE,
         related_name='aluno',
         verbose_name='Usuário',

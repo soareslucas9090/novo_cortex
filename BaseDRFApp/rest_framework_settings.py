@@ -28,7 +28,8 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
     'SIGNING_KEY': signing_key,
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'TOKEN_OBTAIN_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
+    # Serializer customizado para login via CPF com dados do usuário
+    'TOKEN_OBTAIN_SERIALIZER': 'Auth.auth.serializers.LoginSerializer',
     'TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSerializer',
     'TOKEN_VERIFY_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenVerifySerializer',
     'TOKEN_BLACKLIST_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenBlacklistSerializer',

@@ -110,6 +110,7 @@ class Usuario(ModelHelperMixin, ModelBusinessMixin, PermissionsMixin, AbstractBa
 
     class Meta:
         db_table = 'usuarios'
+        app_label = 'usuarios'
         verbose_name = 'Usuário'
         verbose_name_plural = 'Usurios'
         ordering = ['nome']
@@ -153,6 +154,7 @@ class CodigoRedefinicaoSenha(BasicModel):
 
     class Meta:
         db_table = 'password_reset_codes'
+        app_label = 'usuarios'
         verbose_name = 'Código de redefinição de senha'
         verbose_name_plural = 'Códigos de redefinição de senha'
         ordering = ['-created_at']
@@ -192,6 +194,7 @@ class Contato(BasicModel):
 
     class Meta:
         db_table = 'contatos'
+        app_label = 'usuarios'
         verbose_name = 'Contato'
         verbose_name_plural = 'Contatos'
         ordering = ['usuario', '-created_at']
@@ -242,6 +245,7 @@ class Endereco(BasicModel):
 
     class Meta:
         db_table = 'enderecos'
+        app_label = 'usuarios'
         verbose_name = 'Endereço'
         verbose_name_plural = 'Endereços'
         ordering = ['usuario', '-created_at']

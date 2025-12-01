@@ -14,7 +14,7 @@ class Terceirizado(BasicModel):
     - Empresa (1) → (*) Terceirizado
     """
     usuario = models.OneToOneField(
-        "usuario.Usuario",
+        'usuarios.Usuario',
         on_delete=models.CASCADE,
         related_name='terceirizado',
         verbose_name='Usuário',

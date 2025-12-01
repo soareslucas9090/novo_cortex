@@ -1,6 +1,5 @@
-from Vinculos.matricula import *
-
 from django.db import models
+from django.utils import timezone
 
 from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
 
@@ -19,7 +18,7 @@ class Matricula(BasicModel):
         primary_key=True,
     )
     usuario = models.ForeignKey(
-        "Usuarios.usuario.Usuario",
+        'usuarios.Usuario',
         on_delete=models.CASCADE,
         related_name='matriculas',
         verbose_name='Usuário',

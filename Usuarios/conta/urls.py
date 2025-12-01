@@ -1,11 +1,6 @@
 from django.urls import path
 
-from .views import (
-    CriarContaPostView,
-    ConfirmarCodigoCriarContaPostView,
-    ConfirmarSenhaContaPostView,
-    SolicitarCodigoEsqueceuSenhaPostView
-)
+from .views import SolicitarCodigoEsqueceuSenhaPostView
 
 app_name = 'conta'
 

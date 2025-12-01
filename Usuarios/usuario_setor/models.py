@@ -18,7 +18,7 @@ class UsuarioSetor(BasicModel):
     - UsuarioSetor → Campus (referência ao campus do setor)
     """
     usuario = models.ForeignKey(
-        "usuario.Usuario",
+        'usuarios.Usuario',
         on_delete=models.CASCADE,
         related_name='usuario_setores',
         verbose_name='Usuário',
@@ -45,7 +45,6 @@ class UsuarioSetor(BasicModel):
     )
     data_entrada = models.DateField(
         'Data de Entrada',
-        default=timezone.now(),
     )
     data_saida = models.DateField(
         'Data de Saída',
