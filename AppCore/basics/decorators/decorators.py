@@ -1,6 +1,7 @@
 from functools import wraps
 
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from AppCore.core.exceptions.exceptions import (
@@ -27,7 +28,7 @@ def handle_exceptions(func):
             return Response(
                 {'status': 'error', 'detail': str(err) or RESPONSE_ALGO_QUE_MANDOU_ESTA_ERRADO}, status=status.HTTP_400_BAD_REQUEST
             )
-        except AuthorizationException as err:
+        except (AuthorizationException, PermissionDenied) as err:
             return Response(
                 {'status': 'error', 'detail': str(err) or RESPONSE_VOCE_NAO_PODE_FAZER_ISSO}, status=status.HTTP_403_FORBIDDEN
             )
