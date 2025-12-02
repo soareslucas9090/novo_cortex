@@ -47,6 +47,7 @@ class Usuario(ModelHelperMixin, ModelBusinessMixin, PermissionsMixin, AbstractBa
     
     Relacionamentos:
     - Campus (1) → (*) Usuario
+    - Cargo (1) → (*) Usuario
     - Usuario (1) → (*) Contato
     - Usuario (1) → (*) Endereco
     - Usuario (1) → (*) Matricula
@@ -63,6 +64,14 @@ class Usuario(ModelHelperMixin, ModelBusinessMixin, PermissionsMixin, AbstractBa
         on_delete=models.PROTECT,
         related_name='usuarios',
         verbose_name='Campus',
+    )
+    cargo = models.ForeignKey(
+        "cargo.Cargo",
+        on_delete=models.PROTECT,
+        related_name='usuarios',
+        verbose_name='Cargo',
+        null=True,
+        blank=True,
     )
     nome = models.CharField(
         'Nome',
