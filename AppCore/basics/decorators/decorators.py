@@ -40,6 +40,7 @@ def handle_exceptions(func):
                 {'status': 'error', 'detail': str(err) or RESPONSE_VOCE_NAO_PODE_FAZER_ISSO}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         except Exception as err:
+            print(str(err))
             return Response(
                 {'status': 'error', 'detail': str(err)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
