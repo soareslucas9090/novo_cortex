@@ -12,7 +12,7 @@ from EstruturaOrganizacional.cargo.serializers import (
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Cargo'],
     summary='Listar todos os cargos',
     description='''
     Retorna uma lista paginada de todos os cargos cadastrados no sistema.
@@ -45,7 +45,7 @@ class CargoListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Cargo'],
     summary='Criar um novo cargo',
     description='''
     Cria um novo cargo no sistema.
@@ -78,7 +78,7 @@ class CargoCriarView(IsAdminMixin, BasicPostAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Cargo'],
     summary='Editar um cargo',
     description='''
     Edita os dados de um cargo existente.

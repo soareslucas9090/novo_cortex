@@ -12,7 +12,7 @@ from EstruturaOrganizacional.funcao.serializers import (
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Função'],
     summary='Listar todas as funções',
     description='''
     Retorna uma lista paginada de todas as funções cadastradas no sistema.
@@ -45,7 +45,7 @@ class FuncaoListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Função'],
     summary='Criar uma nova função',
     description='''
     Cria uma nova função no sistema.
@@ -80,7 +80,7 @@ class FuncaoCriarView(IsAdminMixin, BasicPostAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Função'],
     summary='Editar uma função',
     description='''
     Edita os dados de uma função existente.

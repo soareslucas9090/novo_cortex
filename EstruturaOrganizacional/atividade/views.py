@@ -12,7 +12,7 @@ from EstruturaOrganizacional.atividade.serializers import (
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Atividade'],
     summary='Listar todas as atividades',
     description='''
     Retorna uma lista paginada de todas as atividades cadastradas no sistema.
@@ -45,7 +45,7 @@ class AtividadeListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Atividade'],
     summary='Criar uma nova atividade',
     description='''
     Cria uma nova atividade no sistema.
@@ -80,7 +80,7 @@ class AtividadeCriarView(IsAdminMixin, BasicPostAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Atividade'],
     summary='Editar uma atividade',
     description='''
     Edita os dados de uma atividade existente.

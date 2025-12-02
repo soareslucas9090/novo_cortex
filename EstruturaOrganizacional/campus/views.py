@@ -16,7 +16,7 @@ from EstruturaOrganizacional.campus.serializers import (
 # ============================================================================
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Campus'],
     summary='Listar todos os campi',
     description='''
     Retorna uma lista paginada de todos os campi cadastrados no sistema.
@@ -49,7 +49,7 @@ class CampusListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Campus'],
     summary='Criar um novo campus',
     description='''
     Cria um novo campus no sistema.
@@ -86,7 +86,7 @@ class CampusCriarView(IsAdminMixin, BasicPostAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Campus'],
     summary='Editar um campus',
     description='''
     Edita os dados de um campus existente.

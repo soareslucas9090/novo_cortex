@@ -12,7 +12,7 @@ from EstruturaOrganizacional.curso.serializers import (
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Curso'],
     summary='Listar todos os cursos',
     description='''
     Retorna uma lista paginada de todos os cursos cadastrados no sistema.
@@ -45,7 +45,7 @@ class CursoListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Curso'],
     summary='Criar um novo curso',
     description='''
     Cria um novo curso no sistema.
@@ -81,7 +81,7 @@ class CursoCriarView(IsAdminMixin, BasicPostAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Curso'],
     summary='Editar um curso',
     description='''
     Edita os dados de um curso existente.
