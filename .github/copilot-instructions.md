@@ -1,6 +1,6 @@
 # Instruções para AI Coding Agents - Base DRF App
 
-> **Última atualização:** 28 de novembro de 2025
+> **Última atualização:** 2 de dezembro de 2025
 
 ## Arquitetura em Camadas
 
@@ -281,6 +281,82 @@ cd NomeApp
 - **Docs API**: drf-spectacular (Swagger/ReDoc em `/api/schema/swagger/`)
 - **Auditoria**: django-simple-history (histórico automático em models)
 - **Email**: SMTP (padrão Gmail, configurável via env)
+
+## Paginação
+
+O projeto usa uma classe de paginação customizada (`AppCore.basics.pagination.pagination.PaginacaoCustomizada`):
+
+- **Tamanho padrão**: 10 itens por página
+- **Query param**: `paginacao` - permite definir o tamanho da página dinamicamente
+- **Limites**: Mínimo 1, Máximo 100
+  - Valores menores que 1 são ajustados para 1
+  - Valores maiores que 100 são ajustados para 100
+
+```python
+# Exemplos de uso:
+# /api/usuarios/              → 10 itens (padrão)
+# /api/usuarios/?paginacao=25 → 25 itens
+# /api/usuarios/?paginacao=0  → 1 item (mínimo)
+# /api/usuarios/?paginacao=500 → 100 itens (máximo)
+```
+
+## Documentação da API (Swagger/OpenAPI)
+
+**OBRIGATÓRIO**: Toda view deve ter documentação completa usando `drf-spectacular`.
+
+### Decorador @extend_schema
+
+Sempre adicione o decorador `@extend_schema` em todas as views:
+
+```python
+from drf_spectacular.utils import extend_schema, OpenApiExample
+
+@extend_schema(
+    tags=['NomeDoModulo'],
+    summary='Descrição curta da operação',
+    description='''
+    Descrição detalhada da operação.
+    
+    **Permissões:** Quem pode acessar
+    **Paginação:** Informações sobre paginação (se aplicável)
+    
+    **Retorno:**
+    - Lista dos campos retornados
+    ''',
+    request=SerializerDeInput,  # Para POST/PUT
+    responses={
+        200: SerializerDeOutput,
+        401: {'description': 'Não autenticado'},
+        403: {'description': 'Sem permissão'},
+        404: {'description': 'Não encontrado'},
+    },
+    examples=[  # Opcional, mas recomendado
+        OpenApiExample(
+            'Exemplo de Requisição',
+            value={'campo': 'valor'},
+            request_only=True,
+        ),
+    ],
+)
+class MinhaView(BasicGetAPIView):
+    ...
+```
+
+### Padrões de Tags
+
+Use tags consistentes para agrupar endpoints no Swagger:
+- `Auth` - Autenticação e tokens
+- `Usuarios` - Operações de usuários
+- `Usuarios.Password reset` - Reset de senha
+- `Campus`, `Setores`, `Empresas`, etc. - Entidades do domínio
+
+### Serializers para Documentação
+
+Para endpoints de input (POST/PUT), crie serializers separados quando necessário:
+- `SerializerInput` - Para documentar o request body
+- `SerializerResponse` - Para documentar a resposta
+
+Veja exemplo em `Auth.auth.serializers` com `LoginInputSerializer` e `LoginResponseSerializer`.
 
 ## URLs e Estrutura de Rotas
 

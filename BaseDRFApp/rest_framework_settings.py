@@ -9,7 +9,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'AppCore.basics.pagination.pagination.PaginacaoCustomizada',
     'PAGE_SIZE': 10,
     'DATE_INPUT_FORMATS': [
         '%Y-%m-%d',
