@@ -61,22 +61,33 @@ class BasicGetAPIView(GenericAPIView):
     def get(self, request, *args, **kwargs):
         self.validate_get(request, *args, **kwargs)
         
-        queryset = self.get_queryset()
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            paginated_response = self.get_paginated_response(serializer.data)
+            
+            data = {
+                'status': 'success',
+                'mensagem': self.mensagem_sucesso or 'Sucesso',
+                'count': paginated_response.data.get('count'),
+                'next': paginated_response.data.get('next'),
+                'previous': paginated_response.data.get('previous'),
+                'dados': paginated_response.data.get('results'),
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        
         serializer = self.get_serializer(queryset, many=True)
+        
+        data = {
+            'status': 'success',
+            'mensagem': self.mensagem_sucesso or 'Sucesso',
+            'dados': serializer.data,
+        }
 
-        data = {'status': 'success'}
-        
-        resultado = {}
-        
-        resultado['mensagem'] = self.mensagem_sucesso
-        
-        data['mensagem'] = resultado.get('mensagem', 'Sucesso')
-        
-        data['dados'] = serializer.data
-
-        return Response(
-            data, status=resultado.get('status_code', status.HTTP_200_OK)
-        )
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class BasicDeleteAPIView(GenericAPIView):
