@@ -197,6 +197,7 @@ class Contato(BasicModel):
         app_label = 'usuarios'
         verbose_name = 'Contato'
         verbose_name_plural = 'Contatos'
+        unique_together = ('email', 'usuario'), ('telefone', 'usuario')
         ordering = ['usuario', '-created_at']
 
     def __str__(self):
