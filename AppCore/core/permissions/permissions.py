@@ -25,15 +25,7 @@ class IsOwnerOrAdminPermission(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
         
-        if request.user.is_superuser:
-            return True
-        
-        perfil_admin = request.user.perfis.filter(
-            tipo=choices.PERFIL_TIPO_ADMIN,
-            status=choices.PERFIL_STATUS_ATIVO
-        ).first()
-        
-        if perfil_admin:
+        if request.user.is_superuser or request.user.is_admin:
             return True
         
         usuario_proprietario = view.obter_usuario_dono(obj)
