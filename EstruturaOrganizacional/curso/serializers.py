@@ -165,3 +165,29 @@ class CursoPorQuantidadeEstagiariosSerializer(serializers.Serializer):
     nome = serializers.CharField(read_only=True)
     total_estagiarios = serializers.IntegerField(read_only=True)
     estagios_ativos = serializers.IntegerField(read_only=True)
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class CursoCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de um novo curso.
+    
+    **Campos obrigatórios:**
+    - nome: Nome do curso
+    
+    **Campos opcionais:**
+    - descricao: Descrição do curso
+    """
+    nome = serializers.CharField(
+        max_length=255,
+        help_text='Nome do curso'
+    )
+    descricao = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text='Descrição do curso'
+    )

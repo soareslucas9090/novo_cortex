@@ -240,3 +240,47 @@ class EstatisticasEmpresasSerializer(serializers.Serializer):
     total_terceirizados = serializers.IntegerField(read_only=True)
     total_estagiarios = serializers.IntegerField(read_only=True)
     empresas_por_quantidade_vinculos = serializers.ListField(read_only=True)
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class EmpresaCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de uma nova empresa.
+    
+    **Campos obrigatórios:**
+    - nome: Nome da empresa
+    - cnpj: CNPJ da empresa (14 dígitos, apenas números)
+    
+    **Campos opcionais:**
+    - is_active: Se a empresa está ativa (padrão: True)
+    """
+    nome = serializers.CharField(
+        max_length=255,
+        help_text='Nome da empresa'
+    )
+    cnpj = serializers.CharField(
+        max_length=14,
+        min_length=14,
+        help_text='CNPJ da empresa (14 dígitos, apenas números)'
+    )
+    is_active = serializers.BooleanField(
+        default=True,
+        required=False,
+        help_text='Se a empresa está ativa'
+    )
+
+    def validate_cnpj(self, value):
+        """Valida se o CNPJ contém apenas números e tem 14 dígitos."""
+        if not value.isdigit():
+            raise serializers.ValidationError('O CNPJ deve conter apenas números.')
+        if len(value) != 14:
+            raise serializers.ValidationError('O CNPJ deve ter exatamente 14 dígitos.')
+        
+        from EstruturaOrganizacional.empresa.models import Empresa
+        if Empresa.objects.filter(cnpj=value).exists():
+            raise serializers.ValidationError('Já existe uma empresa com este CNPJ.')
+        
+        return value

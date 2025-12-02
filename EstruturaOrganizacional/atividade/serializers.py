@@ -127,3 +127,37 @@ class EstatisticasAtividadesSerializer(serializers.Serializer):
         read_only=True
     )
     atividades_por_setor = serializers.ListField(read_only=True)
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class AtividadeCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de uma nova atividade.
+    
+    **Campos obrigatórios:**
+    - setor_id: ID do setor ao qual a atividade pertence
+    - descricao: Descrição da atividade
+    """
+    setor_id = serializers.IntegerField(
+        help_text='ID do setor ao qual a atividade pertence'
+    )
+    descricao = serializers.CharField(
+        help_text='Descrição da atividade'
+    )
+
+    def validate_setor_id(self, value):
+        """Valida se o setor existe."""
+        from EstruturaOrganizacional.setor.models import Setor
+        try:
+            setor = Setor.objects.get(id=value)
+        except Setor.DoesNotExist:
+            raise serializers.ValidationError('Setor não encontrado.')
+        return setor
+
+    def validate(self, attrs):
+        """Renomeia setor_id para setor."""
+        attrs['setor'] = attrs.pop('setor_id')
+        return attrs

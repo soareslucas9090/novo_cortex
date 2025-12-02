@@ -162,3 +162,37 @@ class EstatisticasFuncoesSerializer(serializers.Serializer):
     total_funcoes = serializers.IntegerField(read_only=True)
     funcoes_por_atividade = serializers.ListField(read_only=True)
     funcoes_por_setor = serializers.ListField(read_only=True)
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class FuncaoCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de uma nova função.
+    
+    **Campos obrigatórios:**
+    - atividade_id: ID da atividade à qual a função pertence
+    - descricao: Descrição da função
+    """
+    atividade_id = serializers.IntegerField(
+        help_text='ID da atividade à qual a função pertence'
+    )
+    descricao = serializers.CharField(
+        help_text='Descrição da função'
+    )
+
+    def validate_atividade_id(self, value):
+        """Valida se a atividade existe."""
+        from EstruturaOrganizacional.atividade.models import Atividade
+        try:
+            atividade = Atividade.objects.get(id=value)
+        except Atividade.DoesNotExist:
+            raise serializers.ValidationError('Atividade não encontrada.')
+        return atividade
+
+    def validate(self, attrs):
+        """Renomeia atividade_id para atividade."""
+        attrs['atividade'] = attrs.pop('atividade_id')
+        return attrs

@@ -203,3 +203,28 @@ class EstatisticasSetoresSerializer(serializers.Serializer):
     total_inativos = serializers.IntegerField(read_only=True)
     total_membros_vinculados = serializers.IntegerField(read_only=True)
     setores_por_tamanho = serializers.ListField(read_only=True)
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class SetorCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de um novo setor.
+    
+    **Campos obrigatórios:**
+    - nome: Nome do setor
+    
+    **Campos opcionais:**
+    - is_active: Se o setor está ativo (padrão: True)
+    """
+    nome = serializers.CharField(
+        max_length=255,
+        help_text='Nome do setor'
+    )
+    is_active = serializers.BooleanField(
+        default=True,
+        required=False,
+        help_text='Se o setor está ativo'
+    )

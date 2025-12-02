@@ -142,40 +142,6 @@ class CampusComUsuariosSerializer(serializers.Serializer):
 
 
 # ============================================================================
-# SERIALIZERS DE CARGO
-# ============================================================================
-
-class CargoListaSerializer(serializers.Serializer):
-    """
-    Serializer para listagem de cargos.
-    """
-    id = serializers.IntegerField(read_only=True)
-    nome = serializers.CharField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
-
-
-class CargoDetalheSerializer(serializers.Serializer):
-    """
-    Serializer completo para visualização detalhada de um cargo.
-    """
-    id = serializers.IntegerField(read_only=True)
-    nome = serializers.CharField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
-    
-    # Timestamps
-    created_at = serializers.DateTimeField(read_only=True)
-    updated_at = serializers.DateTimeField(read_only=True)
-
-
-class CargoResumoSerializer(serializers.Serializer):
-    """
-    Serializer resumido de cargo para uso em nested serializers.
-    """
-    id = serializers.IntegerField(read_only=True)
-    nome = serializers.CharField(read_only=True)
-
-
-# ============================================================================
 # SERIALIZERS PARA ESTATÍSTICAS
 # ============================================================================
 
@@ -187,3 +153,47 @@ class EstatisticasCampusSerializer(serializers.Serializer):
     total_ativos = serializers.IntegerField(read_only=True)
     total_inativos = serializers.IntegerField(read_only=True)
     campi = CampusListaSerializer(many=True, read_only=True)
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class CampusCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de um novo campus.
+    
+    **Campos obrigatórios:**
+    - nome: Nome do campus
+    - cnpj: CNPJ do campus (14 dígitos, apenas números)
+    
+    **Campos opcionais:**
+    - is_active: Se o campus está ativo (padrão: True)
+    """
+    nome = serializers.CharField(
+        max_length=255,
+        help_text='Nome do campus'
+    )
+    cnpj = serializers.CharField(
+        max_length=14,
+        min_length=14,
+        help_text='CNPJ do campus (14 dígitos, apenas números)'
+    )
+    is_active = serializers.BooleanField(
+        default=True,
+        required=False,
+        help_text='Se o campus está ativo'
+    )
+
+    def validate_cnpj(self, value):
+        """Valida se o CNPJ contém apenas números e tem 14 dígitos."""
+        if not value.isdigit():
+            raise serializers.ValidationError('O CNPJ deve conter apenas números.')
+        if len(value) != 14:
+            raise serializers.ValidationError('O CNPJ deve ter exatamente 14 dígitos.')
+        
+        from EstruturaOrganizacional.campus.models import Campus
+        if Campus.objects.filter(cnpj=value).exists():
+            raise serializers.ValidationError('Já existe um campus com este CNPJ.')
+        
+        return value
