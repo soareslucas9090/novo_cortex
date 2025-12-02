@@ -8,11 +8,8 @@ from .models import CodigoEmailConta
 
 class ContaHelper(ModelInstanceHelpers):
 
-    def deletar_codigos_expirados(self, email=None):
-        if self.object_instance or email:
-            if not email:
-                email = self.object_instance.email
-
+    def deletar_codigos_expirados(self, email):
+        if self.object_instance:
             CodigoEmailConta.objects.filter(
                 Q(
                     created_at__lt=timezone.now() - timezone.timedelta(minutes=30)
