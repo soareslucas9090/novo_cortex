@@ -245,6 +245,146 @@ class UsuarioListaSerializer(serializers.Serializer):
         return tipos if tipos else ['Sem perfil']
 
 
+class SetorComAtividadesFuncoesSerializer(serializers.Serializer):
+    """
+    Serializer de setor que inclui atividades e funções.
+    
+    Usado em nested serializers para mostrar a hierarquia completa.
+    """
+    id = serializers.IntegerField(read_only=True)
+    nome = serializers.CharField(read_only=True)
+    is_active = serializers.BooleanField(read_only=True)
+    atividades = serializers.SerializerMethodField()
+
+    def get_atividades(self, obj):
+        """Retorna as atividades do setor com suas funções."""
+        atividades_data = []
+        for atividade in obj.atividades.prefetch_related('funcoes').all():
+            atividade_item = {
+                'id': atividade.id,
+                'descricao': atividade.descricao,
+                'funcoes': [
+                    {
+                        'id': funcao.id,
+                        'descricao': funcao.descricao,
+                    }
+                    for funcao in atividade.funcoes.all()
+                ],
+            }
+            atividades_data.append(atividade_item)
+        return atividades_data
+
+
+class UsuarioSetorComAtividadesSerializer(serializers.Serializer):
+    """
+    Serializer de UsuarioSetor que inclui o setor com atividades e funções.
+    
+    Usado para mostrar vínculos completos do usuário.
+    """
+    id = serializers.IntegerField(read_only=True)
+    setor = SetorComAtividadesFuncoesSerializer(read_only=True)
+    campus = CampusResumoSerializer(read_only=True)
+    e_responsavel = serializers.BooleanField(read_only=True)
+    monitor = serializers.BooleanField(read_only=True)
+    data_entrada = serializers.DateField(read_only=True)
+    data_saida = serializers.DateField(read_only=True, allow_null=True)
+    vinculo_ativo = serializers.SerializerMethodField()
+
+    def get_vinculo_ativo(self, obj):
+        """Verifica se o vínculo com o setor está ativo."""
+        return obj.data_saida is None
+
+
+class UsuarioListaDetalhadaSerializer(serializers.Serializer):
+    """
+    Serializer para listagem de usuários com detalhes de setores e atividades.
+    
+    Inclui:
+    - Dados básicos do usuário
+    - Campus
+    - Tipo de perfil
+    - Setores vinculados com suas atividades e funções
+    - Contatos
+    
+    Ideal para listagens onde é necessário visualizar a estrutura
+    organizacional completa de cada usuário.
+    """
+    # Identificação
+    id = serializers.IntegerField(read_only=True)
+    nome = serializers.CharField(read_only=True)
+    cpf = serializers.CharField(read_only=True)
+    cpf_formatado = serializers.SerializerMethodField()
+    
+    # Dados pessoais
+    data_nascimento = serializers.DateField(read_only=True)
+    data_ingresso = serializers.DateField(read_only=True, allow_null=True)
+    
+    # Status
+    is_active = serializers.BooleanField(read_only=True)
+    is_admin = serializers.BooleanField(read_only=True)
+    
+    # Relacionamentos
+    campus = CampusResumoSerializer(read_only=True)
+    tipo_perfil = serializers.SerializerMethodField()
+    
+    # Contatos
+    contatos = serializers.SerializerMethodField()
+    
+    # Setores com atividades e funções
+    setores = serializers.SerializerMethodField()
+    total_setores_ativos = serializers.SerializerMethodField()
+
+    def get_contatos(self, obj):
+        """Retorna os contatos do usuário."""
+        return ContatoListaSerializer(obj.contatos.all(), many=True).data
+
+    def get_cpf_formatado(self, obj):
+        """Retorna o CPF formatado (XXX.XXX.XXX-XX)."""
+        cpf = obj.cpf
+        if len(cpf) == 11:
+            return f'{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}'
+        return cpf
+
+    def get_tipo_perfil(self, obj):
+        """Retorna o(s) tipo(s) de perfil do usuário."""
+        tipos = []
+        try:
+            if hasattr(obj, 'servidor') and obj.servidor:
+                tipos.append('Servidor')
+        except:
+            pass
+        try:
+            if hasattr(obj, 'aluno') and obj.aluno:
+                tipos.append('Aluno')
+        except:
+            pass
+        try:
+            if hasattr(obj, 'terceirizado') and obj.terceirizado:
+                tipos.append('Terceirizado')
+        except:
+            pass
+        try:
+            if hasattr(obj, 'estagiario') and obj.estagiario:
+                tipos.append('Estagiário')
+        except:
+            pass
+        return tipos if tipos else ['Sem perfil']
+
+    def get_setores(self, obj):
+        """Retorna os setores vinculados ao usuário com atividades e funções."""
+        usuario_setores = obj.usuario_setores.select_related(
+            'setor', 'campus'
+        ).prefetch_related(
+            'setor__atividades',
+            'setor__atividades__funcoes'
+        ).all()
+        return UsuarioSetorComAtividadesSerializer(usuario_setores, many=True).data
+
+    def get_total_setores_ativos(self, obj):
+        """Retorna o total de setores com vínculo ativo."""
+        return obj.usuario_setores.filter(data_saida__isnull=True).count()
+
+
 class UsuarioDetalheSerializer(serializers.Serializer):
     """
     Serializer completo para visualização detalhada de um usuário.
