@@ -95,6 +95,7 @@ USERS_APPS = [
 ESTRUTURA_APPS = [
     ########### - Módulo EstruturaOrganizacional - ###########
     'EstruturaOrganizacional.campus',
+    'EstruturaOrganizacional.cargo',
     'EstruturaOrganizacional.setor',
     'EstruturaOrganizacional.atividade',
     'EstruturaOrganizacional.funcao',
