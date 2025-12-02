@@ -61,3 +61,30 @@ class CargoCriarSerializer(serializers.Serializer):
         if Cargo.objects.filter(descricao=value).exists():
             raise serializers.ValidationError('Já existe um cargo com esta descrição.')
         return value
+
+
+class CargoEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de um cargo existente.
+    
+    **Campos opcionais:**
+    - descricao: Descrição do cargo
+    """
+    descricao = serializers.CharField(
+        max_length=255,
+        required=False,
+        help_text='Descrição do cargo'
+    )
+
+    def validate(self, attrs):
+        """Valida se a descrição já existe (exceto para o próprio cargo)."""
+        descricao = attrs.get('descricao')
+        if descricao:
+            from EstruturaOrganizacional.cargo.models import Cargo
+            instance = self.context.get('instance')
+            queryset = Cargo.objects.filter(descricao=descricao)
+            if instance:
+                queryset = queryset.exclude(pk=instance.pk)
+            if queryset.exists():
+                raise serializers.ValidationError({'descricao': 'Já existe um cargo com esta descrição.'})
+        return attrs

@@ -1,3 +1,6 @@
+from typing import List, Optional
+
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 
@@ -13,8 +16,8 @@ class CampusResumoSerializer(serializers.Serializer):
     is_active = serializers.BooleanField(read_only=True)
 
 
-class SetorResumoSerializer(serializers.Serializer):
-    """Serializer resumido do Setor para uso em nested serializers."""
+class SetorResumoUsuarioSerializer(serializers.Serializer):
+    """Serializer resumido do Setor para uso em nested serializers de usuário."""
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
     is_active = serializers.BooleanField(read_only=True)
@@ -79,7 +82,8 @@ class EnderecoSerializer(serializers.Serializer):
 
     endereco_completo = serializers.SerializerMethodField()
 
-    def get_endereco_completo(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_endereco_completo(self, obj) -> str:
         """Retorna o endereço formatado completo."""
         return f'{obj.logradouro}, {obj.num_casa} - {obj.bairro}, {obj.cidade}/{obj.estado} - CEP: {obj.cep}'
 
@@ -114,7 +118,8 @@ class ServidorPerfilSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
 
-    def get_jornada_trabalho_display(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_jornada_trabalho_display(self, obj) -> str:
         """Retorna a descrição legível da jornada de trabalho."""
         return obj.get_jornada_trabalho_display()
 
@@ -140,11 +145,13 @@ class AlunoPerfilSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
 
-    def get_forma_ingresso_display(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_forma_ingresso_display(self, obj) -> str:
         """Retorna a descrição legível da forma de ingresso."""
         return obj.get_forma_ingresso_display()
 
-    def get_turno_display(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_turno_display(self, obj) -> str:
         """Retorna a descrição legível do turno."""
         return obj.get_turno_display()
 
@@ -162,7 +169,8 @@ class TerceirizadoPerfilSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
 
-    def get_contrato_ativo(self, obj):
+    @extend_schema_field(serializers.BooleanField())
+    def get_contrato_ativo(self, obj) -> bool:
         """Verifica se o contrato está ativo (sem data de fim ou data futura)."""
         from django.utils import timezone
         if obj.data_fim_contrato is None:
@@ -185,7 +193,8 @@ class EstagiarioPerfilSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
 
-    def get_estagio_ativo(self, obj):
+    @extend_schema_field(serializers.BooleanField())
+    def get_estagio_ativo(self, obj) -> bool:
         """Verifica se o estágio está ativo (sem data de fim ou data futura)."""
         from django.utils import timezone
         if obj.data_fim_estagio is None:
@@ -204,7 +213,7 @@ class UsuarioSetorResumoSerializer(serializers.Serializer):
     Inclui informações do setor e do vínculo.
     """
     id = serializers.IntegerField(read_only=True)
-    setor = SetorResumoSerializer(read_only=True)
+    setor = SetorResumoUsuarioSerializer(read_only=True)
     campus = CampusResumoSerializer(read_only=True)
     e_responsavel = serializers.BooleanField(read_only=True)
     monitor = serializers.BooleanField(read_only=True)
@@ -212,7 +221,8 @@ class UsuarioSetorResumoSerializer(serializers.Serializer):
     data_saida = serializers.DateField(read_only=True, allow_null=True)
     vinculo_ativo = serializers.SerializerMethodField()
 
-    def get_vinculo_ativo(self, obj):
+    @extend_schema_field(serializers.BooleanField())
+    def get_vinculo_ativo(self, obj) -> bool:
         """Verifica se o vínculo com o setor está ativo."""
         return obj.data_saida is None
 
@@ -256,7 +266,8 @@ class SetorComAtividadesFuncoesSerializer(serializers.Serializer):
     is_active = serializers.BooleanField(read_only=True)
     atividades = serializers.SerializerMethodField()
 
-    def get_atividades(self, obj):
+    @extend_schema_field(serializers.ListField())
+    def get_atividades(self, obj) -> list:
         """Retorna as atividades do setor com suas funções."""
         atividades_data = []
         for atividade in obj.atividades.prefetch_related('funcoes').all():
@@ -290,7 +301,8 @@ class UsuarioSetorComAtividadesSerializer(serializers.Serializer):
     data_saida = serializers.DateField(read_only=True, allow_null=True)
     vinculo_ativo = serializers.SerializerMethodField()
 
-    def get_vinculo_ativo(self, obj):
+    @extend_schema_field(serializers.BooleanField())
+    def get_vinculo_ativo(self, obj) -> bool:
         """Verifica se o vínculo com o setor está ativo."""
         return obj.data_saida is None
 
@@ -334,18 +346,21 @@ class UsuarioListaDetalhadaSerializer(serializers.Serializer):
     setores = serializers.SerializerMethodField()
     total_setores_ativos = serializers.SerializerMethodField()
 
-    def get_contatos(self, obj):
+    @extend_schema_field(ContatoListaSerializer(many=True))
+    def get_contatos(self, obj) -> list:
         """Retorna os contatos do usuário."""
         return ContatoListaSerializer(obj.contatos.all(), many=True).data
 
-    def get_cpf_formatado(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_cpf_formatado(self, obj) -> str:
         """Retorna o CPF formatado (XXX.XXX.XXX-XX)."""
         cpf = obj.cpf
         if len(cpf) == 11:
             return f'{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}'
         return cpf
 
-    def get_tipo_perfil(self, obj):
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
+    def get_tipo_perfil(self, obj) -> List[str]:
         """Retorna o(s) tipo(s) de perfil do usuário."""
         tipos = []
         try:
@@ -370,7 +385,8 @@ class UsuarioListaDetalhadaSerializer(serializers.Serializer):
             pass
         return tipos if tipos else ['Sem perfil']
 
-    def get_setores(self, obj):
+    @extend_schema_field(UsuarioSetorComAtividadesSerializer(many=True))
+    def get_setores(self, obj) -> list:
         """Retorna os setores vinculados ao usuário com atividades e funções."""
         usuario_setores = obj.usuario_setores.select_related(
             'setor', 'campus'
@@ -380,7 +396,8 @@ class UsuarioListaDetalhadaSerializer(serializers.Serializer):
         ).all()
         return UsuarioSetorComAtividadesSerializer(usuario_setores, many=True).data
 
-    def get_total_setores_ativos(self, obj):
+    @extend_schema_field(serializers.IntegerField())
+    def get_total_setores_ativos(self, obj) -> int:
         """Retorna o total de setores com vínculo ativo."""
         return obj.usuario_setores.filter(data_saida__isnull=True).count()
 
@@ -436,19 +453,22 @@ class UsuarioDetalheSerializer(serializers.Serializer):
     perfil_terceirizado = serializers.SerializerMethodField()
     perfil_estagiario = serializers.SerializerMethodField()
 
-    def get_cpf_formatado(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_cpf_formatado(self, obj) -> str:
         """Retorna o CPF formatado (XXX.XXX.XXX-XX)."""
         cpf = obj.cpf
         if len(cpf) == 11:
             return f'{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}'
         return cpf
 
-    def get_setores(self, obj):
+    @extend_schema_field(UsuarioSetorResumoSerializer(many=True))
+    def get_setores(self, obj) -> list:
         """Retorna os setores vinculados ao usuário."""
         usuario_setores = obj.usuario_setores.select_related('setor', 'campus').all()
         return UsuarioSetorResumoSerializer(usuario_setores, many=True).data
 
-    def get_tipo_perfil(self, obj):
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
+    def get_tipo_perfil(self, obj) -> List[str]:
         """Retorna o(s) tipo(s) de perfil do usuário."""
         tipos = []
         if hasattr(obj, 'servidor'):
@@ -477,7 +497,8 @@ class UsuarioDetalheSerializer(serializers.Serializer):
                 pass
         return tipos if tipos else ['Sem perfil']
 
-    def get_perfil_servidor(self, obj):
+    @extend_schema_field(ServidorPerfilSerializer(allow_null=True))
+    def get_perfil_servidor(self, obj) -> Optional[dict]:
         """Retorna os dados do perfil de servidor, se existir."""
         try:
             if hasattr(obj, 'servidor') and obj.servidor:
@@ -486,7 +507,8 @@ class UsuarioDetalheSerializer(serializers.Serializer):
             pass
         return None
 
-    def get_perfil_aluno(self, obj):
+    @extend_schema_field(AlunoPerfilSerializer(allow_null=True))
+    def get_perfil_aluno(self, obj) -> Optional[dict]:
         """Retorna os dados do perfil de aluno, se existir."""
         try:
             if hasattr(obj, 'aluno') and obj.aluno:
@@ -495,7 +517,8 @@ class UsuarioDetalheSerializer(serializers.Serializer):
             pass
         return None
 
-    def get_perfil_terceirizado(self, obj):
+    @extend_schema_field(TerceirizadoPerfilSerializer(allow_null=True))
+    def get_perfil_terceirizado(self, obj) -> Optional[dict]:
         """Retorna os dados do perfil de terceirizado, se existir."""
         try:
             if hasattr(obj, 'terceirizado') and obj.terceirizado:
@@ -504,7 +527,8 @@ class UsuarioDetalheSerializer(serializers.Serializer):
             pass
         return None
 
-    def get_perfil_estagiario(self, obj):
+    @extend_schema_field(EstagiarioPerfilSerializer(allow_null=True))
+    def get_perfil_estagiario(self, obj) -> Optional[dict]:
         """Retorna os dados do perfil de estagiário, se existir."""
         try:
             if hasattr(obj, 'estagiario') and obj.estagiario:

@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 
@@ -17,7 +18,8 @@ class CampusListaSerializer(serializers.Serializer):
     cnpj_formatado = serializers.SerializerMethodField()
     is_active = serializers.BooleanField(read_only=True)
 
-    def get_cnpj_formatado(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_cnpj_formatado(self, obj) -> str:
         """Retorna o CNPJ formatado (XX.XXX.XXX/XXXX-XX)."""
         cnpj = obj.cnpj
         if len(cnpj) == 14:
@@ -197,3 +199,50 @@ class CampusCriarSerializer(serializers.Serializer):
             raise serializers.ValidationError('Já existe um campus com este CNPJ.')
         
         return value
+
+
+class CampusEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de um campus existente.
+    
+    **Campos opcionais:**
+    - nome: Nome do campus
+    - cnpj: CNPJ do campus (14 dígitos, apenas números)
+    - is_active: Se o campus está ativo
+    """
+    nome = serializers.CharField(
+        max_length=255,
+        required=False,
+        help_text='Nome do campus'
+    )
+    cnpj = serializers.CharField(
+        max_length=14,
+        min_length=14,
+        required=False,
+        help_text='CNPJ do campus (14 dígitos, apenas números)'
+    )
+    is_active = serializers.BooleanField(
+        required=False,
+        help_text='Se o campus está ativo'
+    )
+
+    def validate_cnpj(self, value):
+        """Valida se o CNPJ contém apenas números e tem 14 dígitos."""
+        if not value.isdigit():
+            raise serializers.ValidationError('O CNPJ deve conter apenas números.')
+        if len(value) != 14:
+            raise serializers.ValidationError('O CNPJ deve ter exatamente 14 dígitos.')
+        return value
+
+    def validate(self, attrs):
+        """Valida se o CNPJ já existe (exceto para o próprio campus)."""
+        cnpj = attrs.get('cnpj')
+        if cnpj:
+            from EstruturaOrganizacional.campus.models import Campus
+            instance = self.context.get('instance')
+            queryset = Campus.objects.filter(cnpj=cnpj)
+            if instance:
+                queryset = queryset.exclude(pk=instance.pk)
+            if queryset.exists():
+                raise serializers.ValidationError({'cnpj': 'Já existe um campus com este CNPJ.'})
+        return attrs

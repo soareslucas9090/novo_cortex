@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from Usuarios.usuario.serializers import UsuarioReferenciaSerializer
@@ -18,7 +19,8 @@ class SetorListaSerializer(serializers.Serializer):
     is_active = serializers.BooleanField(read_only=True)
     total_membros = serializers.SerializerMethodField()
 
-    def get_total_membros(self, obj):
+    @extend_schema_field(serializers.IntegerField())
+    def get_total_membros(self, obj) -> int:
         """Retorna o total de membros ativos no setor."""
         return obj.usuario_setores.filter(data_saida__isnull=True).count()
 
@@ -225,6 +227,25 @@ class SetorCriarSerializer(serializers.Serializer):
     )
     is_active = serializers.BooleanField(
         default=True,
+        required=False,
+        help_text='Se o setor está ativo'
+    )
+
+
+class SetorEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de um setor existente.
+    
+    **Campos opcionais:**
+    - nome: Nome do setor
+    - is_active: Se o setor está ativo
+    """
+    nome = serializers.CharField(
+        max_length=255,
+        required=False,
+        help_text='Nome do setor'
+    )
+    is_active = serializers.BooleanField(
         required=False,
         help_text='Se o setor está ativo'
     )

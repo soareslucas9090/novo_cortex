@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from EstruturaOrganizacional.setor.serializers import SetorResumoSerializer
@@ -19,13 +20,15 @@ class AtividadeListaSerializer(serializers.Serializer):
     setor = SetorResumoSerializer(read_only=True)
     total_funcoes = serializers.SerializerMethodField()
 
-    def get_descricao_resumida(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_descricao_resumida(self, obj) -> str:
         """Retorna a descrição resumida (primeiros 100 caracteres)."""
         if len(obj.descricao) > 100:
             return f'{obj.descricao[:100]}...'
         return obj.descricao
 
-    def get_total_funcoes(self, obj):
+    @extend_schema_field(serializers.IntegerField())
+    def get_total_funcoes(self, obj) -> int:
         """Retorna o total de funções da atividade."""
         return obj.funcoes.count()
 
@@ -70,7 +73,8 @@ class AtividadeResumoSerializer(serializers.Serializer):
     descricao = serializers.CharField(read_only=True)
     descricao_resumida = serializers.SerializerMethodField()
 
-    def get_descricao_resumida(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_descricao_resumida(self, obj) -> str:
         """Retorna a descrição resumida."""
         if len(obj.descricao) > 50:
             return f'{obj.descricao[:50]}...'
@@ -160,4 +164,37 @@ class AtividadeCriarSerializer(serializers.Serializer):
     def validate(self, attrs):
         """Renomeia setor_id para setor."""
         attrs['setor'] = attrs.pop('setor_id')
+        return attrs
+
+
+class AtividadeEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de uma atividade existente.
+    
+    **Campos opcionais:**
+    - setor_id: ID do setor ao qual a atividade pertence
+    - descricao: Descrição da atividade
+    """
+    setor_id = serializers.IntegerField(
+        required=False,
+        help_text='ID do setor ao qual a atividade pertence'
+    )
+    descricao = serializers.CharField(
+        required=False,
+        help_text='Descrição da atividade'
+    )
+
+    def validate_setor_id(self, value):
+        """Valida se o setor existe."""
+        from EstruturaOrganizacional.setor.models import Setor
+        try:
+            setor = Setor.objects.get(id=value)
+        except Setor.DoesNotExist:
+            raise serializers.ValidationError('Setor não encontrado.')
+        return setor
+
+    def validate(self, attrs):
+        """Renomeia setor_id para setor se existir."""
+        if 'setor_id' in attrs:
+            attrs['setor'] = attrs.pop('setor_id')
         return attrs
