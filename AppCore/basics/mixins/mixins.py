@@ -1,4 +1,4 @@
-from AppCore.core.permissions.permissions import AllowAnyPermission, IsOwnerOrAdminPermission
+from AppCore.core.permissions.permissions import AllowAnyPermission, IsOwnerOrAdminPermission, IsAdminPermission
 
 
 class AllowAnyMixin:
@@ -12,3 +12,7 @@ class IsOwnerOrAdminMixin:
         raise NotImplementedError(
             f'{self.__class__.__name__} deve implementar o método obter_usuario_dono(obj)'
         )
+
+
+class IsAdminMixin:
+    permission_classes = [IsAdminPermission]
