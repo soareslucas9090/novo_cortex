@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from AppCore.common.util.util import _formatar_cpf
+from AppCore.common.util.util import formatar_cpf
 
 
 class LoginSerializer(TokenObtainPairSerializer):
@@ -29,7 +29,7 @@ class LoginSerializer(TokenObtainPairSerializer):
             'id': usuario.id,
             'nome': usuario.nome,
             'cpf': usuario.cpf,
-            'cpf_formatado': _formatar_cpf(usuario.cpf),
+            'cpf_formatado': formatar_cpf(usuario.cpf),
             'data_nascimento': usuario.data_nascimento,
             'data_ingresso': usuario.data_ingresso,
             'is_active': usuario.is_active,

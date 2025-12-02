@@ -2,6 +2,9 @@ import re
 
 from rest_framework import serializers
 
+from AppCore.common.util.util import validar_senha
+from AppCore.core.exceptions.exceptions import ValidationException
+
 from Usuarios.usuario.serializers import UsuarioReferenciaSerializer
 
 
@@ -89,6 +92,19 @@ class EsqueceuSenhaSolicitarSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
 
 
+class ValidarCodigoEmailSerializer(serializers.Serializer):
+    """Serializer para validar código de verificação enviado por email."""
+    email = serializers.EmailField(write_only=True)
+    codigo = serializers.CharField(write_only=True)
+
+    def validate_codigo(self, value):
+        if len(value) != 6:
+            raise serializers.ValidationError(
+                "O código deve possuir 6 caracteres."
+            )
+        return value
+
+
 class EsqueceuSenhaConfirmarSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
     codigo = serializers.CharField(write_only=True)
@@ -103,35 +119,13 @@ class EsqueceuSenhaConfirmarSerializer(serializers.Serializer):
         return value
 
     def validate_nova_senha(self, value):
-        if len(value) < 8:
-            raise serializers.ValidationError(
-            "A senha deve ter pelo menos 8 caracteres."
-            )
-        
-        if not re.search(r'[A-Z]', value):
-            raise serializers.ValidationError(
-            "A senha deve conter pelo menos uma letra maiúscula."
-            )
-        
-        if not re.search(r'[a-z]', value):
-            raise serializers.ValidationError(
-            "A senha deve conter pelo menos uma letra minúscula."
-            )
-        
-        if not re.search(r'\d', value):
-            raise serializers.ValidationError(
-            "A senha deve conter pelo menos um número."
-            )
-        
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', value):
-            raise serializers.ValidationError(
-            "A senha deve conter pelo menos um caractere especial."
-            )
-        
-        return value
+        try:
+            return validar_senha(value)
+        except ValidationException as e:
+            raise serializers.ValidationError(str(e))
 
     def validate(self, data):
-        if data['new_password'] != data['new_password_confirm']:    
+        if data['nova_senha'] != data['confirmar_nova_senha']:
             raise serializers.ValidationError("As senhas não conferem.")
 
         return data
