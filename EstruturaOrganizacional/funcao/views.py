@@ -11,7 +11,7 @@ from EstruturaOrganizacional.funcao.serializers import (
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional - Função'],
+    tags=['Estrutura Organizacional'],
     summary='Listar todas as funções',
     description='''
     Retorna uma lista paginada de todas as funções cadastradas no sistema.
@@ -44,7 +44,7 @@ class FuncaoListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional - Função'],
+    tags=['Estrutura Organizacional'],
     summary='Criar uma nova função',
     description='''
     Cria uma nova função no sistema.

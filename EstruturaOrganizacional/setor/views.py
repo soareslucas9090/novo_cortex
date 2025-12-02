@@ -11,7 +11,7 @@ from EstruturaOrganizacional.setor.serializers import (
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional - Setor'],
+    tags=['Estrutura Organizacional'],
     summary='Listar todos os setores',
     description='''
     Retorna uma lista paginada de todos os setores cadastrados no sistema.
@@ -44,7 +44,7 @@ class SetorListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional - Setor'],
+    tags=['Estrutura Organizacional'],
     summary='Criar um novo setor',
     description='''
     Cria um novo setor no sistema.

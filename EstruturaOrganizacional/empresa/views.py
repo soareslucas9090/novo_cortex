@@ -11,7 +11,7 @@ from EstruturaOrganizacional.empresa.serializers import (
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional - Empresa'],
+    tags=['Estrutura Organizacional'],
     summary='Listar todas as empresas',
     description='''
     Retorna uma lista paginada de todas as empresas cadastradas no sistema.
@@ -44,7 +44,7 @@ class EmpresaListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional - Empresa'],
+    tags=['Estrutura Organizacional'],
     summary='Criar uma nova empresa',
     description='''
     Cria uma nova empresa no sistema.

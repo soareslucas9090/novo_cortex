@@ -11,7 +11,7 @@ from EstruturaOrganizacional.curso.serializers import (
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional - Curso'],
+    tags=['Estrutura Organizacional'],
     summary='Listar todos os cursos',
     description='''
     Retorna uma lista paginada de todos os cursos cadastrados no sistema.
@@ -44,7 +44,7 @@ class CursoListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional - Curso'],
+    tags=['Estrutura Organizacional'],
     summary='Criar um novo curso',
     description='''
     Cria um novo curso no sistema.
