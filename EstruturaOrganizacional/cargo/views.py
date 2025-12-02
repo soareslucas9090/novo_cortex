@@ -1,12 +1,13 @@
 from drf_spectacular.utils import extend_schema
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
 from EstruturaOrganizacional.cargo.models import Cargo
 from EstruturaOrganizacional.cargo.serializers import (
     CargoListaSerializer,
     CargoCriarSerializer,
+    CargoEditarSerializer,
 )
 
 
@@ -74,3 +75,51 @@ class CargoCriarView(IsAdminMixin, BasicPostAPIView):
     def do_action_post(self, serializer_data, request):
         Cargo.objects.create(**serializer_data)
         return {'status_code': 201}
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional'],
+    summary='Editar um cargo',
+    description='''
+    Edita os dados de um cargo existente.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Campos editáveis (todos opcionais):**
+    - descricao: Descrição do cargo
+    
+    **Observação:** Apenas envie os campos que deseja alterar.
+    ''',
+    request=CargoEditarSerializer,
+    responses={
+        200: {'description': 'Cargo editado com sucesso'},
+        400: {'description': 'Dados inválidos'},
+        401: {'description': 'Não autenticado'},
+        403: {'description': 'Sem permissão de administrador'},
+        404: {'description': 'Cargo não encontrado'},
+    },
+)
+class CargoEditarView(IsAdminMixin, BasicPutAPIView):
+    """
+    View para edição de um cargo existente.
+    
+    Apenas administradores podem editar cargos.
+    """
+    serializer_class = CargoEditarSerializer
+    mensagem_sucesso = 'Cargo editado com sucesso.'
+    queryset = Cargo.objects.all()
+    lookup_field = 'pk'
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        try:
+            context['instance'] = self.get_object()
+        except Exception:
+            pass
+        return context
+
+    def do_action_put(self, instance, serializer_data, request):
+        for attr, value in serializer_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return {}

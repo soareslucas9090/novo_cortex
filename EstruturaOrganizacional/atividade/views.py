@@ -1,12 +1,13 @@
 from drf_spectacular.utils import extend_schema
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
 from EstruturaOrganizacional.atividade.models import Atividade
 from EstruturaOrganizacional.atividade.serializers import (
     AtividadeListaSerializer,
     AtividadeCriarSerializer,
+    AtividadeEditarSerializer,
 )
 
 
@@ -76,3 +77,44 @@ class AtividadeCriarView(IsAdminMixin, BasicPostAPIView):
         setor = serializer_data.pop('setor')
         Atividade.objects.create(setor=setor, **serializer_data)
         return {'status_code': 201}
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional'],
+    summary='Editar uma atividade',
+    description='''
+    Edita os dados de uma atividade existente.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Campos editáveis (todos opcionais):**
+    - setor_id: ID do setor ao qual a atividade pertence
+    - descricao: Descrição da atividade
+    
+    **Observação:** Apenas envie os campos que deseja alterar.
+    ''',
+    request=AtividadeEditarSerializer,
+    responses={
+        200: {'description': 'Atividade editada com sucesso'},
+        400: {'description': 'Dados inválidos'},
+        401: {'description': 'Não autenticado'},
+        403: {'description': 'Sem permissão de administrador'},
+        404: {'description': 'Atividade não encontrada'},
+    },
+)
+class AtividadeEditarView(IsAdminMixin, BasicPutAPIView):
+    """
+    View para edição de uma atividade existente.
+    
+    Apenas administradores podem editar atividades.
+    """
+    serializer_class = AtividadeEditarSerializer
+    mensagem_sucesso = 'Atividade editada com sucesso.'
+    queryset = Atividade.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_put(self, instance, serializer_data, request):
+        for attr, value in serializer_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return {}

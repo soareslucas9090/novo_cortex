@@ -1,12 +1,13 @@
 from drf_spectacular.utils import extend_schema
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
 from EstruturaOrganizacional.setor.models import Setor
 from EstruturaOrganizacional.setor.serializers import (
     SetorListaSerializer,
     SetorCriarSerializer,
+    SetorEditarSerializer,
 )
 
 
@@ -77,3 +78,44 @@ class SetorCriarView(IsAdminMixin, BasicPostAPIView):
     def do_action_post(self, serializer_data, request):
         Setor.objects.create(**serializer_data)
         return {'status_code': 201}
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional'],
+    summary='Editar um setor',
+    description='''
+    Edita os dados de um setor existente.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Campos editáveis (todos opcionais):**
+    - nome: Nome do setor
+    - is_active: Se o setor está ativo
+    
+    **Observação:** Apenas envie os campos que deseja alterar.
+    ''',
+    request=SetorEditarSerializer,
+    responses={
+        200: {'description': 'Setor editado com sucesso'},
+        400: {'description': 'Dados inválidos'},
+        401: {'description': 'Não autenticado'},
+        403: {'description': 'Sem permissão de administrador'},
+        404: {'description': 'Setor não encontrado'},
+    },
+)
+class SetorEditarView(IsAdminMixin, BasicPutAPIView):
+    """
+    View para edição de um setor existente.
+    
+    Apenas administradores podem editar setores.
+    """
+    serializer_class = SetorEditarSerializer
+    mensagem_sucesso = 'Setor editado com sucesso.'
+    queryset = Setor.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_put(self, instance, serializer_data, request):
+        for attr, value in serializer_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return {}

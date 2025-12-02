@@ -1,12 +1,13 @@
 from drf_spectacular.utils import extend_schema
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
 from EstruturaOrganizacional.campus.models import Campus
 from EstruturaOrganizacional.campus.serializers import (
     CampusListaSerializer,
     CampusCriarSerializer,
+    CampusEditarSerializer,
 )
 
 
@@ -82,3 +83,53 @@ class CampusCriarView(IsAdminMixin, BasicPostAPIView):
     def do_action_post(self, serializer_data, request):
         Campus.objects.create(**serializer_data)
         return {'status_code': 201}
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional'],
+    summary='Editar um campus',
+    description='''
+    Edita os dados de um campus existente.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Campos editáveis (todos opcionais):**
+    - nome: Nome do campus
+    - cnpj: CNPJ do campus (14 dígitos, apenas números)
+    - is_active: Se o campus está ativo
+    
+    **Observação:** Apenas envie os campos que deseja alterar.
+    ''',
+    request=CampusEditarSerializer,
+    responses={
+        200: {'description': 'Campus editado com sucesso'},
+        400: {'description': 'Dados inválidos'},
+        401: {'description': 'Não autenticado'},
+        403: {'description': 'Sem permissão de administrador'},
+        404: {'description': 'Campus não encontrado'},
+    },
+)
+class CampusEditarView(IsAdminMixin, BasicPutAPIView):
+    """
+    View para edição de um campus existente.
+    
+    Apenas administradores podem editar campi.
+    """
+    serializer_class = CampusEditarSerializer
+    mensagem_sucesso = 'Campus editado com sucesso.'
+    queryset = Campus.objects.all()
+    lookup_field = 'pk'
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        try:
+            context['instance'] = self.get_object()
+        except Exception:
+            pass
+        return context
+
+    def do_action_put(self, instance, serializer_data, request):
+        for attr, value in serializer_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return {}

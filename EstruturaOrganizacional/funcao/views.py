@@ -1,12 +1,13 @@
 from drf_spectacular.utils import extend_schema
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
 from EstruturaOrganizacional.funcao.models import Funcao
 from EstruturaOrganizacional.funcao.serializers import (
     FuncaoListaSerializer,
     FuncaoCriarSerializer,
+    FuncaoEditarSerializer,
 )
 
 
@@ -76,3 +77,44 @@ class FuncaoCriarView(IsAdminMixin, BasicPostAPIView):
         atividade = serializer_data.pop('atividade')
         Funcao.objects.create(atividade=atividade, **serializer_data)
         return {'status_code': 201}
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional'],
+    summary='Editar uma função',
+    description='''
+    Edita os dados de uma função existente.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Campos editáveis (todos opcionais):**
+    - atividade_id: ID da atividade à qual a função pertence
+    - descricao: Descrição da função
+    
+    **Observação:** Apenas envie os campos que deseja alterar.
+    ''',
+    request=FuncaoEditarSerializer,
+    responses={
+        200: {'description': 'Função editada com sucesso'},
+        400: {'description': 'Dados inválidos'},
+        401: {'description': 'Não autenticado'},
+        403: {'description': 'Sem permissão de administrador'},
+        404: {'description': 'Função não encontrada'},
+    },
+)
+class FuncaoEditarView(IsAdminMixin, BasicPutAPIView):
+    """
+    View para edição de uma função existente.
+    
+    Apenas administradores podem editar funções.
+    """
+    serializer_class = FuncaoEditarSerializer
+    mensagem_sucesso = 'Função editada com sucesso.'
+    queryset = Funcao.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_put(self, instance, serializer_data, request):
+        for attr, value in serializer_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return {}

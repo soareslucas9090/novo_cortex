@@ -1,12 +1,13 @@
 from drf_spectacular.utils import extend_schema
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
 from EstruturaOrganizacional.curso.models import Curso
 from EstruturaOrganizacional.curso.serializers import (
     CursoListaSerializer,
     CursoCriarSerializer,
+    CursoEditarSerializer,
 )
 
 
@@ -77,3 +78,44 @@ class CursoCriarView(IsAdminMixin, BasicPostAPIView):
     def do_action_post(self, serializer_data, request):
         Curso.objects.create(**serializer_data)
         return {'status_code': 201}
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional'],
+    summary='Editar um curso',
+    description='''
+    Edita os dados de um curso existente.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Campos editáveis (todos opcionais):**
+    - nome: Nome do curso
+    - descricao: Descrição do curso
+    
+    **Observação:** Apenas envie os campos que deseja alterar.
+    ''',
+    request=CursoEditarSerializer,
+    responses={
+        200: {'description': 'Curso editado com sucesso'},
+        400: {'description': 'Dados inválidos'},
+        401: {'description': 'Não autenticado'},
+        403: {'description': 'Sem permissão de administrador'},
+        404: {'description': 'Curso não encontrado'},
+    },
+)
+class CursoEditarView(IsAdminMixin, BasicPutAPIView):
+    """
+    View para edição de um curso existente.
+    
+    Apenas administradores podem editar cursos.
+    """
+    serializer_class = CursoEditarSerializer
+    mensagem_sucesso = 'Curso editado com sucesso.'
+    queryset = Curso.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_put(self, instance, serializer_data, request):
+        for attr, value in serializer_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return {}
