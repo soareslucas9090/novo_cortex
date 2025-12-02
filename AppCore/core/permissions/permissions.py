@@ -31,3 +31,27 @@ class IsOwnerOrAdminPermission(BasePermission):
         usuario_proprietario = view.obter_usuario_dono(obj)
         
         return usuario_proprietario == request.user
+
+
+class IsAdminPermission(BasePermission):
+    """
+        Esta view permite que apenas o dono de um objeto ou um administrador acesse o recurso.
+        Ela também permite acesso a qualquer usuário autenticado, mas restringe a ações que não interajam com nenhum objeto específico.
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        if not request.user.is_superuser and not request.user.is_admin:
+            return False
+        
+        return True
+    
+    def has_object_permission(self, request, view, obj):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        if not request.user.is_superuser and not request.user.is_admin:
+            return False
+        
+        return True
