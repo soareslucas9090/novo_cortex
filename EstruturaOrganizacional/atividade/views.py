@@ -1,5 +1,7 @@
 from drf_spectacular.utils import extend_schema
 
+from rest_framework import status
+
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
 from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
@@ -27,7 +29,7 @@ from EstruturaOrganizacional.atividade.serializers import (
     - id, descricao, descricao_resumida, setor, total_funcoes
     ''',
     responses={
-        200: AtividadeListaSerializer(many=True),
+        status.HTTP_200_OK: AtividadeListaSerializer(many=True),
     },
 )
 class AtividadeListaView(AllowAnyMixin, BasicGetAPIView):
@@ -58,10 +60,10 @@ class AtividadeListaView(AllowAnyMixin, BasicGetAPIView):
     ''',
     request=AtividadeCriarSerializer,
     responses={
-        200: {'description': 'Atividade criada com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
+        status.HTTP_200_OK: {'description': 'Atividade criada com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
     },
 )
 class AtividadeCriarView(IsAdminMixin, BasicPostAPIView):
@@ -76,7 +78,7 @@ class AtividadeCriarView(IsAdminMixin, BasicPostAPIView):
     def do_action_post(self, serializer_data, request):
         setor = serializer_data.pop('setor')
         Atividade.objects.create(setor=setor, **serializer_data)
-        return {'status_code': 201}
+        return {'status_code': status.HTTP_201_CREATED}
 
 
 @extend_schema(
@@ -95,11 +97,11 @@ class AtividadeCriarView(IsAdminMixin, BasicPostAPIView):
     ''',
     request=AtividadeEditarSerializer,
     responses={
-        200: {'description': 'Atividade editada com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
-        404: {'description': 'Atividade não encontrada'},
+        status.HTTP_200_OK: {'description': 'Atividade editada com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Atividade não encontrada'},
     },
 )
 class AtividadeEditarView(IsAdminMixin, BasicPutAPIView):

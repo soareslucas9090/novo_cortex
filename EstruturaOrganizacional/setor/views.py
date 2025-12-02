@@ -1,5 +1,7 @@
 from drf_spectacular.utils import extend_schema
 
+from rest_framework import status
+
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
 from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
@@ -27,7 +29,7 @@ from EstruturaOrganizacional.setor.serializers import (
     - id, nome, is_active, total_membros
     ''',
     responses={
-        200: SetorListaSerializer(many=True),
+        status.HTTP_200_OK: SetorListaSerializer(many=True),
     },
 )
 class SetorListaView(AllowAnyMixin, BasicGetAPIView):
@@ -60,10 +62,10 @@ class SetorListaView(AllowAnyMixin, BasicGetAPIView):
     ''',
     request=SetorCriarSerializer,
     responses={
-        200: {'description': 'Setor criado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
+        status.HTTP_200_OK: {'description': 'Setor criado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
     },
 )
 class SetorCriarView(IsAdminMixin, BasicPostAPIView):
@@ -77,7 +79,7 @@ class SetorCriarView(IsAdminMixin, BasicPostAPIView):
 
     def do_action_post(self, serializer_data, request):
         Setor.objects.create(**serializer_data)
-        return {'status_code': 201}
+        return {'status_code': status.HTTP_201_CREATED}
 
 
 @extend_schema(
@@ -96,11 +98,11 @@ class SetorCriarView(IsAdminMixin, BasicPostAPIView):
     ''',
     request=SetorEditarSerializer,
     responses={
-        200: {'description': 'Setor editado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
-        404: {'description': 'Setor não encontrado'},
+        status.HTTP_200_OK: {'description': 'Setor editado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Setor não encontrado'},
     },
 )
 class SetorEditarView(IsAdminMixin, BasicPutAPIView):

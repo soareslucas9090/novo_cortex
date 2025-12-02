@@ -1,5 +1,7 @@
 from drf_spectacular.utils import extend_schema
 
+from rest_framework import status
+
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
 from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
@@ -31,7 +33,7 @@ from EstruturaOrganizacional.campus.serializers import (
     - id, nome, cnpj, cnpj_formatado, is_active
     ''',
     responses={
-        200: CampusListaSerializer(many=True),
+        status.HTTP_200_OK: CampusListaSerializer(many=True),
     },
 )
 class CampusListaView(AllowAnyMixin, BasicGetAPIView):
@@ -65,10 +67,10 @@ class CampusListaView(AllowAnyMixin, BasicGetAPIView):
     ''',
     request=CampusCriarSerializer,
     responses={
-        200: {'description': 'Campus criado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
+        status.HTTP_200_OK: {'description': 'Campus criado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
     },
 )
 class CampusCriarView(IsAdminMixin, BasicPostAPIView):
@@ -82,7 +84,7 @@ class CampusCriarView(IsAdminMixin, BasicPostAPIView):
 
     def do_action_post(self, serializer_data, request):
         Campus.objects.create(**serializer_data)
-        return {'status_code': 201}
+        return {'status_code': status.HTTP_201_CREATED}
 
 
 @extend_schema(
@@ -102,11 +104,11 @@ class CampusCriarView(IsAdminMixin, BasicPostAPIView):
     ''',
     request=CampusEditarSerializer,
     responses={
-        200: {'description': 'Campus editado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
-        404: {'description': 'Campus não encontrado'},
+        status.HTTP_200_OK: {'description': 'Campus editado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Campus não encontrado'},
     },
 )
 class CampusEditarView(IsAdminMixin, BasicPutAPIView):

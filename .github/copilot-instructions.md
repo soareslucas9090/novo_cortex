@@ -316,19 +316,19 @@ from drf_spectacular.utils import extend_schema, OpenApiExample
     summary='Descrição curta da operação',
     description='''
     Descrição detalhada da operação.
-    
+
     **Permissões:** Quem pode acessar
     **Paginação:** Informações sobre paginação (se aplicável)
-    
+
     **Retorno:**
     - Lista dos campos retornados
     ''',
     request=SerializerDeInput,  # Para POST/PUT
     responses={
-        200: SerializerDeOutput,
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão'},
-        404: {'description': 'Não encontrado'},
+        status.HTTP_200_OK: SerializerDeOutput,
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Não encontrado'},
     },
     examples=[  # Opcional, mas recomendado
         OpenApiExample(
@@ -345,6 +345,7 @@ class MinhaView(BasicGetAPIView):
 ### Padrões de Tags
 
 Use tags consistentes para agrupar endpoints no Swagger:
+
 - `Auth` - Autenticação e tokens
 - `Usuarios` - Operações de usuários
 - `Usuarios.Password reset` - Reset de senha
@@ -353,6 +354,7 @@ Use tags consistentes para agrupar endpoints no Swagger:
 ### Serializers para Documentação
 
 Para endpoints de input (POST/PUT), crie serializers separados quando necessário:
+
 - `SerializerInput` - Para documentar o request body
 - `SerializerResponse` - Para documentar a resposta
 
@@ -400,24 +402,24 @@ O arquivo `Usuarios/models-teste.py` contém a tradução completa do DER para D
 
 ### Modelos e Relacionamentos
 
-| Modelo          | Descrição                       | Relacionamentos                                            |
-| --------------- | ------------------------------- | ---------------------------------------------------------- |
-| **Campus**      | Campus da instituição           | 1:N com Usuario                                            |
-| **Cargo**       | Cargos na instituição           | Entidade independente                                      |
-| **Empresa**     | Empresa/Instituição externa     | 1:N com Terceirizado, 1:N com Estagiario                   |
-| **Curso**       | Cursos para estagiários         | 1:N com Estagiario                                         |
-| **Setor**       | Setor dentro do campus          | 1:N com Atividade, M:N com Usuario (via UsuarioSetor)      |
-| **Atividade**   | Atividade dentro de um setor    | 1:N com Funcao                                             |
-| **Funcao**      | Função dentro de uma atividade  | N:1 com Atividade                                          |
-| **Usuario**     | Classe base central (login CPF) | Herança para todos os tipos, 1:N com Contato/Endereco/etc  |
-| **UsuarioSetor**| Tabela associativa              | M:N entre Usuario e Setor (com e_responsavel, monitor)     |
-| **Contato**     | Email/telefone do usuário       | N:1 com Usuario                                            |
-| **Endereco**    | Endereço do usuário             | N:1 com Usuario                                            |
-| **Matricula**   | Carteirinha/matrícula           | N:1 com Usuario                                            |
-| **Servidor**    | Servidor público                | Herda de Usuario (OneToOne)                                |
-| **Terceirizado**| Funcionário terceirizado        | Herda de Usuario, N:1 com Empresa                          |
-| **Aluno**       | Aluno matriculado               | Herda de Usuario (OneToOne)                                |
-| **Estagiario**  | Estagiário                      | Herda de Usuario, N:1 com Empresa, N:1 com Curso           |
+| Modelo           | Descrição                       | Relacionamentos                                           |
+| ---------------- | ------------------------------- | --------------------------------------------------------- |
+| **Campus**       | Campus da instituição           | 1:N com Usuario                                           |
+| **Cargo**        | Cargos na instituição           | Entidade independente                                     |
+| **Empresa**      | Empresa/Instituição externa     | 1:N com Terceirizado, 1:N com Estagiario                  |
+| **Curso**        | Cursos para estagiários         | 1:N com Estagiario                                        |
+| **Setor**        | Setor dentro do campus          | 1:N com Atividade, M:N com Usuario (via UsuarioSetor)     |
+| **Atividade**    | Atividade dentro de um setor    | 1:N com Funcao                                            |
+| **Funcao**       | Função dentro de uma atividade  | N:1 com Atividade                                         |
+| **Usuario**      | Classe base central (login CPF) | Herança para todos os tipos, 1:N com Contato/Endereco/etc |
+| **UsuarioSetor** | Tabela associativa              | M:N entre Usuario e Setor (com e_responsavel, monitor)    |
+| **Contato**      | Email/telefone do usuário       | N:1 com Usuario                                           |
+| **Endereco**     | Endereço do usuário             | N:1 com Usuario                                           |
+| **Matricula**    | Carteirinha/matrícula           | N:1 com Usuario                                           |
+| **Servidor**     | Servidor público                | Herda de Usuario (OneToOne)                               |
+| **Terceirizado** | Funcionário terceirizado        | Herda de Usuario, N:1 com Empresa                         |
+| **Aluno**        | Aluno matriculado               | Herda de Usuario (OneToOne)                               |
+| **Estagiario**   | Estagiário                      | Herda de Usuario, N:1 com Empresa, N:1 com Curso          |
 
 ### Apps Sugeridos (Ordem de Criação)
 
@@ -469,7 +471,7 @@ class Aluno(BasicModel):
 class Usuario(AbstractBaseUser, BasicModel):
     USERNAME_FIELD = 'cpf'
     REQUIRED_FIELDS = ['nome']
-    
+
     # campos...
     cpf = models.CharField('CPF', max_length=11, unique=True)
     nome = models.CharField('Nome', max_length=255)

@@ -1,5 +1,7 @@
 from drf_spectacular.utils import extend_schema
 
+from rest_framework import status
+
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
 from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
@@ -27,7 +29,7 @@ from EstruturaOrganizacional.cargo.serializers import (
     - id, descricao
     ''',
     responses={
-        200: CargoListaSerializer(many=True),
+        status.HTTP_200_OK: CargoListaSerializer(many=True),
     },
 )
 class CargoListaView(AllowAnyMixin, BasicGetAPIView):
@@ -58,9 +60,9 @@ class CargoListaView(AllowAnyMixin, BasicGetAPIView):
     request=CargoCriarSerializer,
     responses={
         201: {'description': 'Cargo criado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
     },
 )
 class CargoCriarView(IsAdminMixin, BasicPostAPIView):
@@ -74,7 +76,7 @@ class CargoCriarView(IsAdminMixin, BasicPostAPIView):
 
     def do_action_post(self, serializer_data, request):
         Cargo.objects.create(**serializer_data)
-        return {'status_code': 201}
+        return {'status_code': status.HTTP_201_CREATED}
 
 
 @extend_schema(
@@ -92,11 +94,11 @@ class CargoCriarView(IsAdminMixin, BasicPostAPIView):
     ''',
     request=CargoEditarSerializer,
     responses={
-        200: {'description': 'Cargo editado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
-        404: {'description': 'Cargo não encontrado'},
+        status.HTTP_200_OK: {'description': 'Cargo editado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Cargo não encontrado'},
     },
 )
 class CargoEditarView(IsAdminMixin, BasicPutAPIView):

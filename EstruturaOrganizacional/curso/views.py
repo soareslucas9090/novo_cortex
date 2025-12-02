@@ -1,5 +1,7 @@
 from drf_spectacular.utils import extend_schema
 
+from rest_framework import status
+
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
 from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
@@ -27,7 +29,7 @@ from EstruturaOrganizacional.curso.serializers import (
     - id, nome, descricao, descricao_resumida, total_estagiarios
     ''',
     responses={
-        200: CursoListaSerializer(many=True),
+        status.HTTP_200_OK: CursoListaSerializer(many=True),
     },
 )
 class CursoListaView(AllowAnyMixin, BasicGetAPIView):
@@ -60,10 +62,10 @@ class CursoListaView(AllowAnyMixin, BasicGetAPIView):
     ''',
     request=CursoCriarSerializer,
     responses={
-        200: {'description': 'Curso criado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
+        status.HTTP_200_OK: {'description': 'Curso criado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
     },
 )
 class CursoCriarView(IsAdminMixin, BasicPostAPIView):
@@ -77,7 +79,7 @@ class CursoCriarView(IsAdminMixin, BasicPostAPIView):
 
     def do_action_post(self, serializer_data, request):
         Curso.objects.create(**serializer_data)
-        return {'status_code': 201}
+        return {'status_code': status.HTTP_201_CREATED}
 
 
 @extend_schema(
@@ -96,11 +98,11 @@ class CursoCriarView(IsAdminMixin, BasicPostAPIView):
     ''',
     request=CursoEditarSerializer,
     responses={
-        200: {'description': 'Curso editado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
-        404: {'description': 'Curso não encontrado'},
+        status.HTTP_200_OK: {'description': 'Curso editado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Curso não encontrado'},
     },
 )
 class CursoEditarView(IsAdminMixin, BasicPutAPIView):
