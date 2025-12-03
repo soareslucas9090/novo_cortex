@@ -30,7 +30,7 @@ from EstruturaOrganizacional.campus.serializers import (
     - Use o query param `paginacao` para alterar (entre 1 e 100)
     
     **Retorno:**
-    - id, nome, cnpj, cnpj_formatado, is_active
+    - id, nome, cnpj, cnpj_formatado, ativo
     ''',
     responses={
         status.HTTP_200_OK: CampusListaSerializer(many=True),
@@ -63,7 +63,7 @@ class CampusListaView(AllowAnyMixin, BasicGetAPIView):
     - cnpj: CNPJ do campus (14 dígitos, apenas números)
     
     **Campos opcionais:**
-    - is_active: Se o campus está ativo (padrão: True)
+    - ativo: Se o campus está ativo (padrão: True)
     ''',
     request=CampusCriarSerializer,
     responses={
@@ -98,7 +98,7 @@ class CampusCriarView(IsAdminMixin, BasicPostAPIView):
     **Campos editáveis (todos opcionais):**
     - nome: Nome do campus
     - cnpj: CNPJ do campus (14 dígitos, apenas números)
-    - is_active: Se o campus está ativo
+    - ativo: Se o campus está ativo
     
     **Observação:** Apenas envie os campos que deseja alterar.
     ''',

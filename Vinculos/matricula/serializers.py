@@ -29,7 +29,7 @@ class MatriculaListaSerializer(serializers.Serializer):
     data_validade = serializers.DateField(read_only=True)
     
     # Status
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     esta_valida = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
 
@@ -37,7 +37,7 @@ class MatriculaListaSerializer(serializers.Serializer):
         """Verifica se a matrícula está válida (ativa e não expirada)."""
         from django.utils import timezone
         
-        if not obj.is_active:
+        if not obj.ativo:
             return False
         return obj.data_validade >= timezone.now().date()
 
@@ -45,7 +45,7 @@ class MatriculaListaSerializer(serializers.Serializer):
         """Retorna o status da matrícula."""
         from django.utils import timezone
         
-        if not obj.is_active:
+        if not obj.ativo:
             return 'Inativa'
         if obj.data_validade < timezone.now().date():
             return 'Expirada'
@@ -72,7 +72,7 @@ class MatriculaDetalheSerializer(serializers.Serializer):
     data_validade = serializers.DateField(read_only=True)
     
     # Status
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     esta_valida = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     
@@ -89,7 +89,7 @@ class MatriculaDetalheSerializer(serializers.Serializer):
         """Verifica se a matrícula está válida (ativa e não expirada)."""
         from django.utils import timezone
         
-        if not obj.is_active:
+        if not obj.ativo:
             return False
         return obj.data_validade >= timezone.now().date()
 
@@ -97,7 +97,7 @@ class MatriculaDetalheSerializer(serializers.Serializer):
         """Retorna o status da matrícula."""
         from django.utils import timezone
         
-        if not obj.is_active:
+        if not obj.ativo:
             return 'Inativa'
         if obj.data_validade < timezone.now().date():
             return 'Expirada'
@@ -131,14 +131,14 @@ class MatriculaResumoSerializer(serializers.Serializer):
     """
     matricula = serializers.CharField(read_only=True)
     data_validade = serializers.DateField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     esta_valida = serializers.SerializerMethodField()
 
     def get_esta_valida(self, obj):
         """Verifica se a matrícula está válida."""
         from django.utils import timezone
         
-        if not obj.is_active:
+        if not obj.ativo:
             return False
         return obj.data_validade >= timezone.now().date()
 
@@ -156,7 +156,7 @@ class MatriculaPorUsuarioSerializer(serializers.Serializer):
     matricula = serializers.CharField(read_only=True)
     data_expedicao = serializers.DateField(read_only=True)
     data_validade = serializers.DateField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     esta_valida = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     dias_ate_expiracao = serializers.SerializerMethodField()
@@ -165,7 +165,7 @@ class MatriculaPorUsuarioSerializer(serializers.Serializer):
         """Verifica se a matrícula está válida."""
         from django.utils import timezone
         
-        if not obj.is_active:
+        if not obj.ativo:
             return False
         return obj.data_validade >= timezone.now().date()
 
@@ -173,7 +173,7 @@ class MatriculaPorUsuarioSerializer(serializers.Serializer):
         """Retorna o status da matrícula."""
         from django.utils import timezone
         
-        if not obj.is_active:
+        if not obj.ativo:
             return 'Inativa'
         if obj.data_validade < timezone.now().date():
             return 'Expirada'
@@ -196,7 +196,7 @@ class UsuarioComMatriculasSerializer(serializers.Serializer):
     cpf = serializers.CharField(read_only=True)
     cpf_formatado = serializers.SerializerMethodField()
     campus = CampusResumoSerializer(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     
     # Matrículas
     matriculas = MatriculaPorUsuarioSerializer(many=True, read_only=True)
@@ -216,7 +216,7 @@ class UsuarioComMatriculasSerializer(serializers.Serializer):
         
         hoje = timezone.now().date()
         matricula_ativa = obj.matriculas.filter(
-            is_active=True,
+            ativo=True,
             data_validade__gte=hoje
         ).first()
         

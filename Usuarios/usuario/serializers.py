@@ -13,14 +13,14 @@ class CampusResumoSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
     cnpj = serializers.CharField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
 
 
 class SetorResumoUsuarioSerializer(serializers.Serializer):
     """Serializer resumido do Setor para uso em nested serializers de usuário."""
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
 
 
 class EmpresaResumoSerializer(serializers.Serializer):
@@ -28,7 +28,7 @@ class EmpresaResumoSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
     cnpj = serializers.CharField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
 
 
 class CursoResumoSerializer(serializers.Serializer):
@@ -137,7 +137,7 @@ class AlunoPerfilSerializer(serializers.Serializer):
     aluno_especial = serializers.BooleanField(read_only=True)
     turno = serializers.CharField(read_only=True)
     turno_display = serializers.SerializerMethodField()
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     ano_conclusao = serializers.IntegerField(read_only=True, allow_null=True)
     data_colacao = serializers.DateField(read_only=True, allow_null=True)
     data_expedicao_diploma = serializers.DateField(read_only=True, allow_null=True)
@@ -238,7 +238,7 @@ class UsuarioListaSerializer(serializers.Serializer):
     nome = serializers.CharField(read_only=True)
     cpf = serializers.CharField(read_only=True)
     campus = CampusResumoSerializer(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     tipo_perfil = serializers.SerializerMethodField()
 
     def get_tipo_perfil(self, obj):
@@ -263,7 +263,7 @@ class SetorComAtividadesFuncoesSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     atividades = serializers.SerializerMethodField()
 
     @extend_schema_field(serializers.ListField())
@@ -332,7 +332,7 @@ class UsuarioListaDetalhadaSerializer(serializers.Serializer):
     data_ingresso = serializers.DateField(read_only=True, allow_null=True)
     
     # Status
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     is_admin = serializers.BooleanField(read_only=True)
     
     # Relacionamentos
@@ -428,7 +428,7 @@ class UsuarioDetalheSerializer(serializers.Serializer):
     data_ingresso = serializers.DateField(read_only=True, allow_null=True)
     
     # Status e permissões
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     is_admin = serializers.BooleanField(read_only=True)
     is_staff = serializers.BooleanField(read_only=True)
     is_superuser = serializers.BooleanField(read_only=True)
@@ -577,7 +577,7 @@ class UsuarioResumoSerializer(serializers.Serializer):
     cpf = serializers.CharField(read_only=True)
     cpf_formatado = serializers.SerializerMethodField()
     campus = CampusResumoSerializer(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     tipo_perfil = serializers.SerializerMethodField()
 
     def get_cpf_formatado(self, obj):

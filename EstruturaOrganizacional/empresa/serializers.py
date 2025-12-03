@@ -16,7 +16,7 @@ class EmpresaListaSerializer(serializers.Serializer):
     nome = serializers.CharField(read_only=True)
     cnpj = serializers.CharField(read_only=True)
     cnpj_formatado = serializers.SerializerMethodField()
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     total_terceirizados = serializers.SerializerMethodField()
     total_estagiarios = serializers.SerializerMethodField()
 
@@ -53,7 +53,7 @@ class EmpresaDetalheSerializer(serializers.Serializer):
     nome = serializers.CharField(read_only=True)
     cnpj = serializers.CharField(read_only=True)
     cnpj_formatado = serializers.SerializerMethodField()
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     
     # Estatísticas de terceirizados
     total_terceirizados = serializers.SerializerMethodField()
@@ -135,7 +135,7 @@ class EmpresaResumoSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
     cnpj = serializers.CharField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
 
 
 class EmpresaComVinculosSerializer(serializers.Serializer):
@@ -146,7 +146,7 @@ class EmpresaComVinculosSerializer(serializers.Serializer):
     nome = serializers.CharField(read_only=True)
     cnpj = serializers.CharField(read_only=True)
     cnpj_formatado = serializers.SerializerMethodField()
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     
     # Terceirizados
     terceirizados = serializers.SerializerMethodField()
@@ -259,7 +259,7 @@ class EmpresaCriarSerializer(serializers.Serializer):
     - cnpj: CNPJ da empresa (14 dígitos, apenas números)
     
     **Campos opcionais:**
-    - is_active: Se a empresa está ativa (padrão: True)
+    - ativo: Se a empresa está ativa (padrão: True)
     """
     nome = serializers.CharField(
         max_length=255,
@@ -270,7 +270,7 @@ class EmpresaCriarSerializer(serializers.Serializer):
         min_length=14,
         help_text='CNPJ da empresa (14 dígitos, apenas números)'
     )
-    is_active = serializers.BooleanField(
+    ativo = serializers.BooleanField(
         default=True,
         required=False,
         help_text='Se a empresa está ativa'
@@ -297,7 +297,7 @@ class EmpresaEditarSerializer(serializers.Serializer):
     **Campos opcionais:**
     - nome: Nome da empresa
     - cnpj: CNPJ da empresa (14 dígitos, apenas números)
-    - is_active: Se a empresa está ativa
+    - ativo: Se a empresa está ativa
     """
     nome = serializers.CharField(
         max_length=255,
@@ -310,7 +310,7 @@ class EmpresaEditarSerializer(serializers.Serializer):
         required=False,
         help_text='CNPJ da empresa (14 dígitos, apenas números)'
     )
-    is_active = serializers.BooleanField(
+    ativo = serializers.BooleanField(
         required=False,
         help_text='Se a empresa está ativa'
     )

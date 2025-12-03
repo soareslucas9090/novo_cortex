@@ -25,7 +25,7 @@ class UsuarioBaseAlunoSerializer(serializers.Serializer):
     cpf_formatado = serializers.SerializerMethodField()
     data_nascimento = serializers.DateField(read_only=True)
     data_ingresso = serializers.DateField(read_only=True, allow_null=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     campus = CampusResumoSerializer(read_only=True)
 
     def get_cpf_formatado(self, obj):
@@ -79,7 +79,7 @@ class AlunoListaSerializer(serializers.Serializer):
     campus = CampusResumoSerializer(source='usuario.campus', read_only=True)
     
     # Status
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     is_formado = serializers.BooleanField(read_only=True)
 
     def get_turno_display(self, obj):
@@ -111,7 +111,7 @@ class AlunoDetalheSerializer(serializers.Serializer):
     turno_display = serializers.SerializerMethodField()
     
     # Status
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     is_formado = serializers.BooleanField(read_only=True)
     situacao_academica = serializers.SerializerMethodField()
     
@@ -139,7 +139,7 @@ class AlunoDetalheSerializer(serializers.Serializer):
         """Retorna a situação acadêmica atual do aluno."""
         if obj.is_formado:
             return 'Formado'
-        if not obj.is_active:
+        if not obj.ativo:
             return 'Inativo'
         if obj.aluno_especial:
             return 'Aluno Especial'

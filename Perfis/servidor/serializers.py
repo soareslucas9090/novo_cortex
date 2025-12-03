@@ -25,7 +25,7 @@ class UsuarioBaseServidorSerializer(serializers.Serializer):
     cpf_formatado = serializers.SerializerMethodField()
     data_nascimento = serializers.DateField(read_only=True)
     data_ingresso = serializers.DateField(read_only=True, allow_null=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     is_admin = serializers.BooleanField(read_only=True)
     last_login = serializers.DateField(read_only=True, allow_null=True)
     campus = CampusResumoSerializer(read_only=True)
@@ -80,7 +80,7 @@ class ServidorListaSerializer(serializers.Serializer):
     campus = CampusResumoSerializer(source='usuario.campus', read_only=True)
     
     # Status
-    is_active = serializers.BooleanField(source='usuario.is_active', read_only=True)
+    ativo = serializers.BooleanField(source='usuario.ativo', read_only=True)
 
     def get_jornada_trabalho_display(self, obj):
         """Retorna a descrição legível da jornada de trabalho."""

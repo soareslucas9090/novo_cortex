@@ -32,7 +32,7 @@ class LoginSerializer(TokenObtainPairSerializer):
             'cpf_formatado': formatar_cpf(usuario.cpf),
             'data_nascimento': usuario.data_nascimento,
             'data_ingresso': usuario.data_ingresso,
-            'is_active': usuario.is_active,
+            'ativo': usuario.ativo,
             'is_admin': usuario.is_admin,
             'is_staff': usuario.is_staff,
             'is_superuser': usuario.is_superuser,

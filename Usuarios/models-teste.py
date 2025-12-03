@@ -164,7 +164,7 @@ class Campus(BasicModel):
         max_length=14,
         unique=True,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )
@@ -196,7 +196,7 @@ class Cargo(BasicModel):
         max_length=255,
         unique=True,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )
@@ -236,7 +236,7 @@ class Empresa(BasicModel):
         max_length=14,
         unique=True,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )
@@ -298,7 +298,7 @@ class Setor(BasicModel):
         'Nome',
         max_length=255,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )
@@ -403,7 +403,7 @@ class UsuarioManager(BaseUserManager, Base404ExceptionManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_admin', True)
-        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('ativo', True)
         
         return self.create_user(cpf, nome, password, **extra_fields)
 
@@ -457,7 +457,7 @@ class Usuario(AbstractBaseUser, BasicModel):
         blank=True,
         null=True,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )
@@ -687,7 +687,7 @@ class Matricula(BasicModel):
         'Data de Expedição',
         default=timezone.now,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )
@@ -829,7 +829,7 @@ class Aluno(BasicModel):
     - previsao_conclusao (INTEGER)
     - aluno_especial (BOOLEAN)
     - turno (VARCHAR)
-    - is_active (BOOLEAN)
+    - ativo (BOOLEAN)
     - ano_conclusao (INTEGER)
     - data_colacao (DATE)
     - data_expedicao_diploma (DATE)
@@ -868,7 +868,7 @@ class Aluno(BasicModel):
         choices=TURNO_OPCOES,
         default=TURNO_INTEGRAL,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )

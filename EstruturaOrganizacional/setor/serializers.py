@@ -17,7 +17,7 @@ class SetorListaSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
     sigla = serializers.CharField(read_only=True, allow_null=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     total_membros = serializers.SerializerMethodField()
 
     @extend_schema_field(serializers.IntegerField())
@@ -39,7 +39,7 @@ class SetorDetalheSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
     sigla = serializers.CharField(read_only=True, allow_null=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     
     # Atividades
     atividades = serializers.SerializerMethodField()
@@ -89,7 +89,7 @@ class SetorResumoSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
     sigla = serializers.CharField(read_only=True, allow_null=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
 
 
 class SetorComMembrosSerializer(serializers.Serializer):
@@ -101,7 +101,7 @@ class SetorComMembrosSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
     sigla = serializers.CharField(read_only=True, allow_null=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     
     # Membros agrupados
     responsaveis = serializers.SerializerMethodField()
@@ -173,7 +173,7 @@ class SetorComAtividadesSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
     sigla = serializers.CharField(read_only=True, allow_null=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     
     # Atividades com funções
     atividades = serializers.SerializerMethodField()
@@ -225,7 +225,7 @@ class SetorCriarSerializer(serializers.Serializer):
     
     **Campos opcionais:**
     - sigla: Sigla do setor
-    - is_active: Se o setor está ativo (padrão: True)
+    - ativo: Se o setor está ativo (padrão: True)
     """
     nome = serializers.CharField(
         max_length=255,
@@ -238,7 +238,7 @@ class SetorCriarSerializer(serializers.Serializer):
         allow_null=True,
         help_text='Sigla do setor'
     )
-    is_active = serializers.BooleanField(
+    ativo = serializers.BooleanField(
         default=True,
         required=False,
         help_text='Se o setor está ativo'
@@ -252,7 +252,7 @@ class SetorEditarSerializer(serializers.Serializer):
     **Campos opcionais:**
     - nome: Nome do setor
     - sigla: Sigla do setor
-    - is_active: Se o setor está ativo
+    - ativo: Se o setor está ativo
     """
     nome = serializers.CharField(
         max_length=255,
@@ -266,7 +266,7 @@ class SetorEditarSerializer(serializers.Serializer):
         allow_null=True,
         help_text='Sigla do setor'
     )
-    is_active = serializers.BooleanField(
+    ativo = serializers.BooleanField(
         required=False,
         help_text='Se o setor está ativo'
     )

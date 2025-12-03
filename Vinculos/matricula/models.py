@@ -15,7 +15,6 @@ class Matricula(BasicModel):
         'Número da Matrícula',
         max_length=50,
         unique=True,
-        primary_key=True,
     )
     usuario = models.ForeignKey(
         'usuarios.Usuario',
@@ -30,7 +29,7 @@ class Matricula(BasicModel):
         'Data de Expedição',
         default=timezone.now,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )

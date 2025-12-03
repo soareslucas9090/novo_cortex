@@ -26,7 +26,7 @@ from EstruturaOrganizacional.empresa.serializers import (
     - Use o query param `paginacao` para alterar (entre 1 e 100)
     
     **Retorno:**
-    - id, nome, cnpj, cnpj_formatado, is_active, total_terceirizados, total_estagiarios
+    - id, nome, cnpj, cnpj_formatado, ativo, total_terceirizados, total_estagiarios
     ''',
     responses={
         status.HTTP_200_OK: EmpresaListaSerializer(many=True),
@@ -59,7 +59,7 @@ class EmpresaListaView(AllowAnyMixin, BasicGetAPIView):
     - cnpj: CNPJ da empresa (14 dígitos, apenas números)
     
     **Campos opcionais:**
-    - is_active: Se a empresa está ativa (padrão: True)
+    - ativo: Se a empresa está ativa (padrão: True)
     ''',
     request=EmpresaCriarSerializer,
     responses={
@@ -94,7 +94,7 @@ class EmpresaCriarView(IsAdminMixin, BasicPostAPIView):
     **Campos editáveis (todos opcionais):**
     - nome: Nome da empresa
     - cnpj: CNPJ da empresa (14 dígitos, apenas números)
-    - is_active: Se a empresa está ativa
+    - ativo: Se a empresa está ativa
     
     **Observação:** Apenas envie os campos que deseja alterar.
     ''',

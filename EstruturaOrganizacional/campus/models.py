@@ -22,7 +22,7 @@ class Campus(ModelBusinessMixin, BasicModel):
         max_length=14,
         unique=True,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )

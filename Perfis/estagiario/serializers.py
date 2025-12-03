@@ -27,7 +27,7 @@ class UsuarioBaseEstagiarioSerializer(serializers.Serializer):
     cpf_formatado = serializers.SerializerMethodField()
     data_nascimento = serializers.DateField(read_only=True)
     data_ingresso = serializers.DateField(read_only=True, allow_null=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     campus = CampusResumoSerializer(read_only=True)
 
     def get_cpf_formatado(self, obj):
@@ -81,7 +81,7 @@ class EstagiarioListaSerializer(serializers.Serializer):
     campus = CampusResumoSerializer(source='usuario.campus', read_only=True)
     
     # Status
-    is_active = serializers.BooleanField(source='usuario.is_active', read_only=True)
+    ativo = serializers.BooleanField(source='usuario.ativo', read_only=True)
     estagio_ativo = serializers.SerializerMethodField()
 
     def get_estagio_ativo(self, obj):

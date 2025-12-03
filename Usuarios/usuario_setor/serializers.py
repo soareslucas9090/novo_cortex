@@ -138,7 +138,7 @@ class SetorComUsuariosSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     
     # Usuários agrupados
     responsaveis = serializers.SerializerMethodField()

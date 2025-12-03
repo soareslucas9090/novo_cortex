@@ -16,7 +16,7 @@ class CampusListaSerializer(serializers.Serializer):
     nome = serializers.CharField(read_only=True)
     cnpj = serializers.CharField(read_only=True)
     cnpj_formatado = serializers.SerializerMethodField()
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
 
     @extend_schema_field(serializers.CharField())
     def get_cnpj_formatado(self, obj) -> str:
@@ -40,7 +40,7 @@ class CampusDetalheSerializer(serializers.Serializer):
     nome = serializers.CharField(read_only=True)
     cnpj = serializers.CharField(read_only=True)
     cnpj_formatado = serializers.SerializerMethodField()
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     
     # Estatísticas
     total_usuarios = serializers.SerializerMethodField()
@@ -63,7 +63,7 @@ class CampusDetalheSerializer(serializers.Serializer):
 
     def get_total_usuarios_ativos(self, obj):
         """Retorna o total de usuários ativos do campus."""
-        return obj.usuarios.filter(is_active=True).count()
+        return obj.usuarios.filter(ativo=True).count()
 
 
 class CampusResumoSerializer(serializers.Serializer):
@@ -72,7 +72,7 @@ class CampusResumoSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
 
 
 class CampusComUsuariosSerializer(serializers.Serializer):
@@ -83,7 +83,7 @@ class CampusComUsuariosSerializer(serializers.Serializer):
     nome = serializers.CharField(read_only=True)
     cnpj = serializers.CharField(read_only=True)
     cnpj_formatado = serializers.SerializerMethodField()
-    is_active = serializers.BooleanField(read_only=True)
+    ativo = serializers.BooleanField(read_only=True)
     
     # Estatísticas por perfil
     estatisticas = serializers.SerializerMethodField()
@@ -100,7 +100,7 @@ class CampusComUsuariosSerializer(serializers.Serializer):
         usuarios = obj.usuarios.all()
         
         total = usuarios.count()
-        ativos = usuarios.filter(is_active=True).count()
+        ativos = usuarios.filter(ativo=True).count()
         
         # Contagem por perfil
         servidores = 0
@@ -170,7 +170,7 @@ class CampusCriarSerializer(serializers.Serializer):
     - cnpj: CNPJ do campus (14 dígitos, apenas números)
     
     **Campos opcionais:**
-    - is_active: Se o campus está ativo (padrão: True)
+    - ativo: Se o campus está ativo (padrão: True)
     """
     nome = serializers.CharField(
         max_length=255,
@@ -181,7 +181,7 @@ class CampusCriarSerializer(serializers.Serializer):
         min_length=14,
         help_text='CNPJ do campus (14 dígitos, apenas números)'
     )
-    is_active = serializers.BooleanField(
+    ativo = serializers.BooleanField(
         default=True,
         required=False,
         help_text='Se o campus está ativo'
@@ -208,7 +208,7 @@ class CampusEditarSerializer(serializers.Serializer):
     **Campos opcionais:**
     - nome: Nome do campus
     - cnpj: CNPJ do campus (14 dígitos, apenas números)
-    - is_active: Se o campus está ativo
+    - ativo: Se o campus está ativo
     """
     nome = serializers.CharField(
         max_length=255,
@@ -221,7 +221,7 @@ class CampusEditarSerializer(serializers.Serializer):
         required=False,
         help_text='CNPJ do campus (14 dígitos, apenas números)'
     )
-    is_active = serializers.BooleanField(
+    ativo = serializers.BooleanField(
         required=False,
         help_text='Se o campus está ativo'
     )

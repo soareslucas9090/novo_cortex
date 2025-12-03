@@ -55,7 +55,7 @@ def garantir_admin_padrao(sender, **kwargs):
             campus = Campus.objects.create(
                 nome='Campus Padrão',
                 cnpj='00000000000000',
-                is_active=True,
+                ativo=True,
             )
 
         # Cria o usuário admin

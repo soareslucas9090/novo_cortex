@@ -26,7 +26,7 @@ from EstruturaOrganizacional.setor.serializers import (
     - Use o query param `paginacao` para alterar (entre 1 e 100)
     
     **Retorno:**
-    - id, nome, sigla, is_active, total_membros
+    - id, nome, sigla, ativo, total_membros
     ''',
     responses={
         status.HTTP_200_OK: SetorListaSerializer(many=True),
@@ -59,7 +59,7 @@ class SetorListaView(AllowAnyMixin, BasicGetAPIView):
     
     **Campos opcionais:**
     - sigla: Sigla do setor
-    - is_active: Se o setor está ativo (padrão: True)
+    - ativo: Se o setor está ativo (padrão: True)
     ''',
     request=SetorCriarSerializer,
     responses={
@@ -94,7 +94,7 @@ class SetorCriarView(IsAdminMixin, BasicPostAPIView):
     **Campos editáveis (todos opcionais):**
     - nome: Nome do setor
     - sigla: Sigla do setor
-    - is_active: Se o setor está ativo
+    - ativo: Se o setor está ativo
     
     **Observação:** Apenas envie os campos que deseja alterar.
     ''',

@@ -24,7 +24,7 @@ from Usuarios.usuario.serializers import UsuarioListaDetalhadaSerializer, Usuari
     
     **Retorno:**
     - id, nome, cpf, cpf_formatado, data_nascimento, data_ingresso
-    - is_active, is_admin, campus, tipo_perfil
+    - ativo, is_admin, campus, tipo_perfil
     - contatos (lista de emails e telefones)
     - setores (lista com detalhes de cada setor, incluindo atividades e funções)
     - total_setores_ativos
@@ -68,7 +68,7 @@ class UsuarioListaView(IsAdminMixin, BasicGetAPIView):
     
     **Retorno:**
     - Dados básicos: id, nome, cpf, cpf_formatado, data_nascimento, data_ingresso
-    - Status: is_active, is_admin, is_staff, is_superuser, last_login
+    - Status: ativo, is_admin, is_staff, is_superuser, last_login
     - Relacionamentos: campus, tipo_perfil
     - Contatos completos (email, telefone, timestamps)
     - Endereços completos (logradouro, bairro, cidade, estado, cep, etc)

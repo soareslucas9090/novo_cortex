@@ -24,7 +24,7 @@ class Setor(ModelBusinessMixin, BasicModel):
         blank=True,
         null=True,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )

@@ -18,7 +18,7 @@ class Aluno(BasicModel):
     - previsao_conclusao (INTEGER)
     - aluno_especial (BOOLEAN)
     - turno (VARCHAR)
-    - is_active (BOOLEAN)
+    - ativo (BOOLEAN)
     - ano_conclusao (INTEGER)
     - data_colacao (DATE)
     - data_expedicao_diploma (DATE)
@@ -57,7 +57,7 @@ class Aluno(BasicModel):
         choices=choices.TURNO_OPCOES,
         default=choices.TURNO_INTEGRAL,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )

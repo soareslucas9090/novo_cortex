@@ -31,7 +31,7 @@ class UsuarioManager(BaseUserManager, Base404ExceptionManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_admin', True)
-        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('ativo', True)
         
         return self.create_user(cpf, nome, password, **extra_fields)
 
@@ -90,7 +90,7 @@ class Usuario(ModelHelperMixin, ModelBusinessMixin, PermissionsMixin, AbstractBa
         blank=True,
         null=True,
     )
-    is_active = models.BooleanField(
+    ativo = models.BooleanField(
         'Ativo',
         default=True,
     )

@@ -25,14 +25,14 @@ class UsuarioAdmin(BaseUserAdmin):
     list_display = (
         'cpf',
         'nome',
-        'is_active',
+        'ativo',
         'is_staff',
         'is_admin',
         'campus',
     )
     
     list_filter = (
-        'is_active',
+        'ativo',
         'is_staff',
         'is_superuser',
         'is_admin',
@@ -57,7 +57,7 @@ class UsuarioAdmin(BaseUserAdmin):
         }),
         ('Permissões', {
             'fields': (
-                'is_active',
+                'ativo',
                 'is_staff',
                 'is_superuser',
                 'is_admin',
