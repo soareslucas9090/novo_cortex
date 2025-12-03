@@ -1,9 +1,12 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, BaseManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
+
+from .business import EstagiarioBusiness
 
 
-class Estagiario(BasicModel):
+class Estagiario(ModelBusinessMixin, BasicModel):
     """
     Representa um estagiário na instituição.
     
@@ -19,6 +22,8 @@ class Estagiario(BasicModel):
     - data_inicio_estagio (DATE)
     - data_fim_estagio (DATE)
     """
+    business_class = EstagiarioBusiness
+    
     usuario = models.OneToOneField(
         'usuarios.Usuario',
         on_delete=models.CASCADE,

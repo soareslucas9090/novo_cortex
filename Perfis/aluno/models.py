@@ -1,11 +1,13 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, BaseManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
 
 from . import choices
+from .business import AlunoBusiness
 
 
-class Aluno(BasicModel):
+class Aluno(ModelBusinessMixin, BasicModel):
     """
     Representa um aluno da instituição.
     
@@ -23,6 +25,8 @@ class Aluno(BasicModel):
     - data_colacao (DATE)
     - data_expedicao_diploma (DATE)
     """
+    business_class = AlunoBusiness
+    
     usuario = models.OneToOneField(
         'usuarios.Usuario',
         on_delete=models.CASCADE,

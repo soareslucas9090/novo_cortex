@@ -7,6 +7,8 @@ from Usuarios.usuario.serializers import (
     UsuarioSetorResumoSerializer,
 )
 
+from . import choices
+
 
 # ============================================================================
 # SERIALIZERS DE USUÁRIO BASE PARA SERVIDOR
@@ -180,3 +182,99 @@ class ServidorPorJornadaSerializer(serializers.Serializer):
     jornada_trabalho = serializers.IntegerField(read_only=True)
     jornada_trabalho_display = serializers.CharField(read_only=True)
     quantidade = serializers.IntegerField(read_only=True)
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class ServidorCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de um novo servidor.
+    
+    **Campos obrigatórios:**
+    - usuario_id: ID do usuário base
+    - data_posse: Data de posse do servidor
+    - padrao: Padrão do servidor
+    - classe: Classe do servidor
+    - tipo_servidor: Tipo de servidor (Professor, Técnico, etc.)
+    
+    **Campos opcionais:**
+    - jornada_trabalho: Jornada de trabalho (padrão: 40h)
+    """
+    usuario_id = serializers.IntegerField(
+        help_text='ID do usuário base'
+    )
+    data_posse = serializers.DateField(
+        help_text='Data de posse do servidor'
+    )
+    jornada_trabalho = serializers.ChoiceField(
+        choices=choices.JORNADA_OPCOES,
+        default=choices.JORNADA_40,
+        required=False,
+        help_text='Jornada de trabalho (0 = Dedicação Exclusiva)'
+    )
+    padrao = serializers.CharField(
+        max_length=50,
+        help_text='Padrão do servidor'
+    )
+    classe = serializers.CharField(
+        max_length=50,
+        help_text='Classe do servidor'
+    )
+    tipo_servidor = serializers.CharField(
+        max_length=100,
+        help_text='Tipo de servidor (Ex: Professor, Técnico Administrativo)'
+    )
+
+    def validate_usuario_id(self, value):
+        """Valida se o usuário existe e se não é já um servidor."""
+        from Usuarios.usuario.models import Usuario
+        from Perfis.servidor.models import Servidor
+        
+        try:
+            usuario = Usuario.objects.get(pk=value)
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError('Usuário não encontrado.')
+        
+        if Servidor.objects.filter(usuario_id=value).exists():
+            raise serializers.ValidationError('Este usuário já possui um perfil de servidor.')
+        
+        return value
+
+
+class ServidorEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de um servidor existente.
+    
+    **Campos opcionais:**
+    - data_posse: Data de posse do servidor
+    - jornada_trabalho: Jornada de trabalho
+    - padrao: Padrão do servidor
+    - classe: Classe do servidor
+    - tipo_servidor: Tipo de servidor
+    """
+    data_posse = serializers.DateField(
+        required=False,
+        help_text='Data de posse do servidor'
+    )
+    jornada_trabalho = serializers.ChoiceField(
+        choices=choices.JORNADA_OPCOES,
+        required=False,
+        help_text='Jornada de trabalho (0 = Dedicação Exclusiva)'
+    )
+    padrao = serializers.CharField(
+        max_length=50,
+        required=False,
+        help_text='Padrão do servidor'
+    )
+    classe = serializers.CharField(
+        max_length=50,
+        required=False,
+        help_text='Classe do servidor'
+    )
+    tipo_servidor = serializers.CharField(
+        max_length=100,
+        required=False,
+        help_text='Tipo de servidor (Ex: Professor, Técnico Administrativo)'
+    )

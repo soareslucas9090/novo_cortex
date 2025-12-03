@@ -1,9 +1,12 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, BaseManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
+
+from .business import TerceirizadoBusiness
 
 
-class Terceirizado(BasicModel):
+class Terceirizado(ModelBusinessMixin, BasicModel):
     """
     Representa um funcionário terceirizado.
     
@@ -13,6 +16,8 @@ class Terceirizado(BasicModel):
     Relacionamentos:
     - Empresa (1) → (*) Terceirizado
     """
+    business_class = TerceirizadoBusiness
+    
     usuario = models.OneToOneField(
         'usuarios.Usuario',
         on_delete=models.CASCADE,

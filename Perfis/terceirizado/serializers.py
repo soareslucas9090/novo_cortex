@@ -262,3 +262,122 @@ class ContratosVencendoSerializer(serializers.Serializer):
         
         delta = obj.data_fim_contrato - timezone.now().date()
         return delta.days
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class TerceirizadoCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de um novo terceirizado.
+    
+    **Campos obrigatórios:**
+    - usuario_id: ID do usuário base
+    - empresa_id: ID da empresa
+    - data_inicio_contrato: Data de início do contrato
+    
+    **Campos opcionais:**
+    - data_fim_contrato: Data de fim do contrato
+    """
+    usuario_id = serializers.IntegerField(
+        help_text='ID do usuário base'
+    )
+    empresa_id = serializers.IntegerField(
+        help_text='ID da empresa'
+    )
+    data_inicio_contrato = serializers.DateField(
+        help_text='Data de início do contrato'
+    )
+    data_fim_contrato = serializers.DateField(
+        required=False,
+        allow_null=True,
+        help_text='Data de fim do contrato'
+    )
+
+    def validate_usuario_id(self, value):
+        """Valida se o usuário existe e se não é já um terceirizado."""
+        from Usuarios.usuario.models import Usuario
+        from Perfis.terceirizado.models import Terceirizado
+        
+        try:
+            usuario = Usuario.objects.get(pk=value)
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError('Usuário não encontrado.')
+        
+        if Terceirizado.objects.filter(usuario_id=value).exists():
+            raise serializers.ValidationError('Este usuário já possui um perfil de terceirizado.')
+        
+        return value
+
+    def validate_empresa_id(self, value):
+        """Valida se a empresa existe."""
+        from EstruturaOrganizacional.empresa.models import Empresa
+        
+        try:
+            Empresa.objects.get(pk=value)
+        except Empresa.DoesNotExist:
+            raise serializers.ValidationError('Empresa não encontrada.')
+        
+        return value
+
+    def validate(self, attrs):
+        """Valida se a data de fim é posterior à data de início."""
+        data_inicio = attrs.get('data_inicio_contrato')
+        data_fim = attrs.get('data_fim_contrato')
+        
+        if data_fim and data_inicio and data_fim < data_inicio:
+            raise serializers.ValidationError({
+                'data_fim_contrato': 'A data de fim deve ser posterior à data de início.'
+            })
+        
+        return attrs
+
+
+class TerceirizadoEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de um terceirizado existente.
+    
+    **Campos opcionais:**
+    - empresa_id: ID da empresa
+    - data_inicio_contrato: Data de início do contrato
+    - data_fim_contrato: Data de fim do contrato
+    """
+    empresa_id = serializers.IntegerField(
+        required=False,
+        help_text='ID da empresa'
+    )
+    data_inicio_contrato = serializers.DateField(
+        required=False,
+        help_text='Data de início do contrato'
+    )
+    data_fim_contrato = serializers.DateField(
+        required=False,
+        allow_null=True,
+        help_text='Data de fim do contrato'
+    )
+
+    def validate_empresa_id(self, value):
+        """Valida se a empresa existe."""
+        if value is not None:
+            from EstruturaOrganizacional.empresa.models import Empresa
+            
+            try:
+                Empresa.objects.get(pk=value)
+            except Empresa.DoesNotExist:
+                raise serializers.ValidationError('Empresa não encontrada.')
+        
+        return value
+
+    def validate(self, attrs):
+        """Valida se a data de fim é posterior à data de início."""
+        data_inicio = attrs.get('data_inicio_contrato')
+        data_fim = attrs.get('data_fim_contrato')
+        
+        # Se ambas as datas estão sendo atualizadas
+        if data_fim and data_inicio and data_fim < data_inicio:
+            raise serializers.ValidationError({
+                'data_fim_contrato': 'A data de fim deve ser posterior à data de início.'
+            })
+        
+        return attrs

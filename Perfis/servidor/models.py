@@ -1,11 +1,13 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, BaseManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
 
 from . import choices
+from .business import ServidorBusiness
 
 
-class Servidor(BasicModel):
+class Servidor(ModelBusinessMixin, BasicModel):
     """
     Representa um servidor da instituição.
     
@@ -19,6 +21,8 @@ class Servidor(BasicModel):
     - classe (VARCHAR)
     - tipo_servidor (VARCHAR)
     """
+    business_class = ServidorBusiness
+    
     usuario = models.OneToOneField(
         'usuarios.Usuario',
         on_delete=models.CASCADE,

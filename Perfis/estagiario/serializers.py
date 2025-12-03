@@ -312,3 +312,180 @@ class EstatisticasEstagiariosSerializer(serializers.Serializer):
     media_carga_horaria = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
     por_curso = serializers.ListField(read_only=True)
     por_empresa = serializers.ListField(read_only=True)
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class EstagiarioCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de um novo estagiário.
+    
+    **Campos obrigatórios:**
+    - usuario_id: ID do usuário base
+    - empresa_id: ID da empresa do estágio
+    - curso_id: ID do curso
+    - carga_horaria: Carga horária semanal
+    - data_inicio_estagio: Data de início do estágio
+    
+    **Campos opcionais:**
+    - data_fim_estagio: Data de fim do estágio
+    """
+    usuario_id = serializers.IntegerField(
+        help_text='ID do usuário base'
+    )
+    empresa_id = serializers.IntegerField(
+        help_text='ID da empresa do estágio'
+    )
+    curso_id = serializers.IntegerField(
+        help_text='ID do curso'
+    )
+    carga_horaria = serializers.IntegerField(
+        help_text='Carga horária semanal do estágio'
+    )
+    data_inicio_estagio = serializers.DateField(
+        help_text='Data de início do estágio'
+    )
+    data_fim_estagio = serializers.DateField(
+        required=False,
+        allow_null=True,
+        help_text='Data de fim do estágio'
+    )
+
+    def validate_usuario_id(self, value):
+        """Valida se o usuário existe e se não é já um estagiário."""
+        from Usuarios.usuario.models import Usuario
+        from Perfis.estagiario.models import Estagiario
+        
+        try:
+            usuario = Usuario.objects.get(pk=value)
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError('Usuário não encontrado.')
+        
+        if Estagiario.objects.filter(usuario_id=value).exists():
+            raise serializers.ValidationError('Este usuário já possui um perfil de estagiário.')
+        
+        return value
+
+    def validate_empresa_id(self, value):
+        """Valida se a empresa existe."""
+        from EstruturaOrganizacional.empresa.models import Empresa
+        
+        try:
+            Empresa.objects.get(pk=value)
+        except Empresa.DoesNotExist:
+            raise serializers.ValidationError('Empresa não encontrada.')
+        
+        return value
+
+    def validate_curso_id(self, value):
+        """Valida se o curso existe."""
+        from EstruturaOrganizacional.curso.models import Curso
+        
+        try:
+            Curso.objects.get(pk=value)
+        except Curso.DoesNotExist:
+            raise serializers.ValidationError('Curso não encontrado.')
+        
+        return value
+
+    def validate_carga_horaria(self, value):
+        """Valida se a carga horária é válida."""
+        if value <= 0:
+            raise serializers.ValidationError('A carga horária deve ser maior que zero.')
+        if value > 40:
+            raise serializers.ValidationError('A carga horária não pode exceder 40 horas semanais.')
+        return value
+
+    def validate(self, attrs):
+        """Valida se a data de fim é posterior à data de início."""
+        data_inicio = attrs.get('data_inicio_estagio')
+        data_fim = attrs.get('data_fim_estagio')
+        
+        if data_fim and data_inicio and data_fim < data_inicio:
+            raise serializers.ValidationError({
+                'data_fim_estagio': 'A data de fim deve ser posterior à data de início.'
+            })
+        
+        return attrs
+
+
+class EstagiarioEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de um estagiário existente.
+    
+    **Campos opcionais:**
+    - empresa_id: ID da empresa do estágio
+    - curso_id: ID do curso
+    - carga_horaria: Carga horária semanal
+    - data_inicio_estagio: Data de início do estágio
+    - data_fim_estagio: Data de fim do estágio
+    """
+    empresa_id = serializers.IntegerField(
+        required=False,
+        help_text='ID da empresa do estágio'
+    )
+    curso_id = serializers.IntegerField(
+        required=False,
+        help_text='ID do curso'
+    )
+    carga_horaria = serializers.IntegerField(
+        required=False,
+        help_text='Carga horária semanal do estágio'
+    )
+    data_inicio_estagio = serializers.DateField(
+        required=False,
+        help_text='Data de início do estágio'
+    )
+    data_fim_estagio = serializers.DateField(
+        required=False,
+        allow_null=True,
+        help_text='Data de fim do estágio'
+    )
+
+    def validate_empresa_id(self, value):
+        """Valida se a empresa existe."""
+        if value is not None:
+            from EstruturaOrganizacional.empresa.models import Empresa
+            
+            try:
+                Empresa.objects.get(pk=value)
+            except Empresa.DoesNotExist:
+                raise serializers.ValidationError('Empresa não encontrada.')
+        
+        return value
+
+    def validate_curso_id(self, value):
+        """Valida se o curso existe."""
+        if value is not None:
+            from EstruturaOrganizacional.curso.models import Curso
+            
+            try:
+                Curso.objects.get(pk=value)
+            except Curso.DoesNotExist:
+                raise serializers.ValidationError('Curso não encontrado.')
+        
+        return value
+
+    def validate_carga_horaria(self, value):
+        """Valida se a carga horária é válida."""
+        if value is not None:
+            if value <= 0:
+                raise serializers.ValidationError('A carga horária deve ser maior que zero.')
+            if value > 40:
+                raise serializers.ValidationError('A carga horária não pode exceder 40 horas semanais.')
+        return value
+
+    def validate(self, attrs):
+        """Valida se a data de fim é posterior à data de início."""
+        data_inicio = attrs.get('data_inicio_estagio')
+        data_fim = attrs.get('data_fim_estagio')
+        
+        # Se ambas as datas estão sendo atualizadas
+        if data_fim and data_inicio and data_fim < data_inicio:
+            raise serializers.ValidationError({
+                'data_fim_estagio': 'A data de fim deve ser posterior à data de início.'
+            })
+        
+        return attrs

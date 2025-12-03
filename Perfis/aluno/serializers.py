@@ -7,6 +7,8 @@ from Usuarios.usuario.serializers import (
     UsuarioSetorResumoSerializer,
 )
 
+from . import choices
+
 
 # ============================================================================
 # SERIALIZERS DE USUÁRIO BASE PARA ALUNO
@@ -219,3 +221,146 @@ class EstatisticasAlunosSerializer(serializers.Serializer):
     media_ira = serializers.DecimalField(max_digits=4, decimal_places=2, read_only=True)
     por_turno = AlunoPorTurnoSerializer(many=True, read_only=True)
     por_forma_ingresso = AlunoPorFormaIngressoSerializer(many=True, read_only=True)
+
+
+# ============================================================================
+# SERIALIZERS DE INPUT (Criação/Edição)
+# ============================================================================
+
+class AlunoCriarSerializer(serializers.Serializer):
+    """
+    Serializer para criação de um novo aluno.
+    
+    **Campos obrigatórios:**
+    - usuario_id: ID do usuário base
+    - previsao_conclusao: Ano previsto para conclusão do curso
+    
+    **Campos opcionais:**
+    - ira: Índice de Rendimento Acadêmico (padrão: 0.00)
+    - forma_ingresso: Forma de ingresso (padrão: ENEM)
+    - aluno_especial: Se é aluno especial (padrão: False)
+    - turno: Turno do aluno (padrão: Integral)
+    - ativo: Se o aluno está ativo (padrão: True)
+    """
+    usuario_id = serializers.IntegerField(
+        help_text='ID do usuário base'
+    )
+    ira = serializers.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=0.00,
+        required=False,
+        help_text='Índice de Rendimento Acadêmico (0.00 a 10.00)'
+    )
+    forma_ingresso = serializers.ChoiceField(
+        choices=choices.FORMA_INGRESSO_OPCOES,
+        default=choices.FORMA_INGRESSO_ENEM,
+        required=False,
+        help_text='Forma de ingresso do aluno'
+    )
+    previsao_conclusao = serializers.IntegerField(
+        help_text='Ano previsto para conclusão do curso'
+    )
+    aluno_especial = serializers.BooleanField(
+        default=False,
+        required=False,
+        help_text='Se o aluno é aluno especial'
+    )
+    turno = serializers.ChoiceField(
+        choices=choices.TURNO_OPCOES,
+        default=choices.TURNO_INTEGRAL,
+        required=False,
+        help_text='Turno do aluno'
+    )
+    ativo = serializers.BooleanField(
+        default=True,
+        required=False,
+        help_text='Se o aluno está ativo'
+    )
+
+    def validate_usuario_id(self, value):
+        """Valida se o usuário existe e se não é já um aluno."""
+        from Usuarios.usuario.models import Usuario
+        from Perfis.aluno.models import Aluno
+        
+        try:
+            usuario = Usuario.objects.get(pk=value)
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError('Usuário não encontrado.')
+        
+        if Aluno.objects.filter(usuario_id=value).exists():
+            raise serializers.ValidationError('Este usuário já possui um perfil de aluno.')
+        
+        return value
+
+    def validate_ira(self, value):
+        """Valida se o IRA está entre 0 e 10."""
+        if value < 0 or value > 10:
+            raise serializers.ValidationError('O IRA deve estar entre 0.00 e 10.00.')
+        return value
+
+
+class AlunoEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de um aluno existente.
+    
+    **Campos opcionais:**
+    - ira: Índice de Rendimento Acadêmico
+    - forma_ingresso: Forma de ingresso
+    - previsao_conclusao: Ano previsto para conclusão
+    - aluno_especial: Se é aluno especial
+    - turno: Turno do aluno
+    - ativo: Se o aluno está ativo
+    - ano_conclusao: Ano de conclusão (para formados)
+    - data_colacao: Data de colação (para formados)
+    - data_expedicao_diploma: Data de expedição do diploma (para formados)
+    """
+    ira = serializers.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        required=False,
+        help_text='Índice de Rendimento Acadêmico (0.00 a 10.00)'
+    )
+    forma_ingresso = serializers.ChoiceField(
+        choices=choices.FORMA_INGRESSO_OPCOES,
+        required=False,
+        help_text='Forma de ingresso do aluno'
+    )
+    previsao_conclusao = serializers.IntegerField(
+        required=False,
+        help_text='Ano previsto para conclusão do curso'
+    )
+    aluno_especial = serializers.BooleanField(
+        required=False,
+        help_text='Se o aluno é aluno especial'
+    )
+    turno = serializers.ChoiceField(
+        choices=choices.TURNO_OPCOES,
+        required=False,
+        help_text='Turno do aluno'
+    )
+    ativo = serializers.BooleanField(
+        required=False,
+        help_text='Se o aluno está ativo'
+    )
+    ano_conclusao = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text='Ano de conclusão do curso'
+    )
+    data_colacao = serializers.DateField(
+        required=False,
+        allow_null=True,
+        help_text='Data de colação de grau'
+    )
+    data_expedicao_diploma = serializers.DateField(
+        required=False,
+        allow_null=True,
+        help_text='Data de expedição do diploma'
+    )
+
+    def validate_ira(self, value):
+        """Valida se o IRA está entre 0 e 10."""
+        if value is not None and (value < 0 or value > 10):
+            raise serializers.ValidationError('O IRA deve estar entre 0.00 e 10.00.')
+        return value
