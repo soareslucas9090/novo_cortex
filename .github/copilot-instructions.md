@@ -168,8 +168,8 @@ class MinhaModel(BasicModel):
 
 ### Custom Managers
 
-- Crie managers customizados para User models (combine `BaseUserManager` + `Base404ExceptionManager`)
-- Todos os managers devem herdar de `Base404ExceptionManager` para lançar `NotFoundException`
+- Crie managers customizados para User models (UsuarioManager) herdando de `BaseManagerUser` (combina `BaseUserManager` e `BaseManager`)
+- Todos os managers devem herdar de `BaseManager` para lançar `NotFoundException` e filtrat por `ativo=True` por padrão
 
 ## Serializers - Padrão de Montagem
 
