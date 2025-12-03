@@ -178,7 +178,7 @@ class BasicRetrieveAPIView(GenericAPIView):
         except Http404:
             raise NotFoundException(RESPONSE_ALGUM_DADO_NAO_FOI_ENCONTRADO)
 
-        serializer = self.get_serializer(instance)
+        serializer = self.get_serializer(self.object)
 
         data = {'status': 'success'}
         
