@@ -6,7 +6,6 @@ from AppCore.basics.models.models import BasicModel
 class CodigoEmailConta(BasicModel):
     email = models.EmailField('Email')
     codigo = models.CharField('Código', max_length=6, null=False)
-    created_at = models.DateTimeField(auto_now_add=True)
     esta_validado = models.BooleanField('Validado', default=False)
     
     class Meta:

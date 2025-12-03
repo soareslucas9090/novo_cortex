@@ -153,7 +153,6 @@ class CodigoRedefinicaoSenha(BasicModel):
         related_name='codigo_redefinicao_senha',
         verbose_name='Usuário'
     )
-    created_at = models.DateTimeField(auto_now_add=True)
     tempo_expiracao = models.DateTimeField(null=False)
     codigo = models.IntegerField(null=False)
     validado = models.BooleanField(default=False)

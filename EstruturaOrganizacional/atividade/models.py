@@ -24,6 +24,11 @@ class Atividade(ModelBusinessMixin, BasicModel):
     descricao = models.TextField(
         'Descrição',
     )
+    eh_gratificada = models.BooleanField(
+        'É gratificada',
+        default=False,
+        help_text='Indica se a atividade é considerada para gratificação.',
+    )
     
     business_class = AtividadeBusiness
 
