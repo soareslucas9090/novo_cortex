@@ -1,9 +1,12 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
+
+from EstruturaOrganizacional.empresa.business import EmpresaBusiness
 
 
-class Empresa(BasicModel):
+class Empresa(ModelBusinessMixin, BasicModel):
     """
     Representa uma empresa (terceirizada ou instituição externa).
     
@@ -27,6 +30,7 @@ class Empresa(BasicModel):
         default=True,
     )
 
+    business_class = EmpresaBusiness
     objects = Base404ExceptionManager()
 
     class Meta:

@@ -2,15 +2,56 @@
 
 > **Última atualização:** 2 de dezembro de 2025
 
+ATUALIZE O ARQUIVO .github/copilot-instructions.md sempre que houver mudanças significativas na estrutura, arquitetura ou convenções do projeto.
+
 ## Arquitetura em Camadas
 
-Este projeto segue uma arquitetura modular de 4 camadas bem definidas. **Cada model deve ter suas próprias classes de camadas** localizadas no mesmo app:
+Este projeto segue uma arquitetura modular de 4 camadas bem definidas. **Cada model deve ter suas próprias classes de camadas** localizadas no mesmo app.
+
+### ⚠️ PRINCÍPIO FUNDAMENTAL: Views Leves
+
+**SEMPRE prefira implementar lógica nas camadas (Business, Rules, Helpers, State) ao invés de nas views.**
+
+- **Views devem ser "burras"**: Apenas recebem dados, delegam para o Business, e retornam resposta
+- **Toda lógica de negócio** vai no `business.py`
+- **Toda validação de regras** vai no `rules.py`
+- **Toda query/utilitário** vai no `helpers.py`
+- **Toda lógica de estado** vai no `state.py`
+
+```python
+# ❌ ERRADO - Lógica na view
+def do_action_put(self, serializer_data, request):
+    for attr, value in serializer_data.items():
+        setattr(self.object, attr, value)
+    self.object.save()
+
+# ✅ CORRETO - View delega para business
+def do_action_put(self, serializer_data, request):
+    self.object.business.atualizar_dados(serializer_data)
+```
+
+### Hierarquia de Chamadas
+
+```
+View (entrada/saída)
+  └── Business (orquestração)
+        ├── Rules (validações)
+        ├── Helpers (queries/utils)
+        └── State (transições de estado)
+```
+
+**Importante:**
+
+- Views só chamam **Business**
+- Business pode chamar **Rules**, **Helpers** e **State**
+- Rules, Helpers e State **NÃO** chamam uns aos outros diretamente
 
 ### 1. **Rules** (`rules.py`) - Regras de Negócio Teóricas
 
 - **Responsabilidade**: Validar SE uma ação pode ser executada (retorna `bool` ou lança exceção)
 - **Herda de**: `ModelInstanceRules` (AppCore.core.rules)
 - **Não deve**: Conter lógica de persistência ou orquestração
+- **Chamado por**: Business (nunca diretamente pela view)
 - **Exemplo**: `UsuarioRules`, `ContaRules`
 
 ```python
@@ -28,10 +69,13 @@ class ProdutoRules(ModelInstanceRules):
 - **Responsabilidade**: Orquestrar COMO fazer operações (CRUD, workflows complexos)
 - **Herda de**: `ModelInstanceBusiness` (AppCore.core.business)
 - **Pode chamar**: Rules (validações), Helpers (queries), State (transições)
+- **Chamado por**: Views (única camada que views podem chamar diretamente)
 - **Captura exceções**: Define `exceptions_handled = (AuthorizationException, BusinessRuleException, ValidationException, NotFoundException)`
+- **Acesso**: Via `model.business.nome_do_metodo()` após configurar o mixin
 
 ```python
 from AppCore.core.business.business import ModelInstanceBusiness
+from AppCore.core.exceptions.exceptions import SystemErrorException
 
 class ProdutoBusiness(ModelInstanceBusiness):
     def criar_produto(self, **dados):
@@ -40,6 +84,15 @@ class ProdutoBusiness(ModelInstanceBusiness):
         if not regras.can_create():
             raise BusinessRuleException('Não pode criar')
         return Produto.objects.create(**dados)
+
+    def atualizar_dados(self, dados):
+        '''Método padrão para atualização de dados'''
+        try:
+            for attr, value in dados.items():
+                setattr(self.object_instance, attr, value)
+            self.object_instance.save()
+        except Exception as e:
+            raise SystemErrorException('Não foi possível atualizar os dados.')
 ```
 
 ### 3. **Helpers** (`helpers.py`) - Queries e Utilitários
@@ -47,6 +100,7 @@ class ProdutoBusiness(ModelInstanceBusiness):
 - **Responsabilidade**: Fornecer ferramentas (queries customizadas, formatações, utils)
 - **Herda de**: `ModelInstanceHelpers` (AppCore.core.helpers)
 - **Acesso**: Queries reutilizáveis, transformações de dados
+- **Chamado por**: Business (não pela view diretamente)
 
 ```python
 from AppCore.core.helpers.helpers import ModelInstanceHelpers
@@ -316,19 +370,19 @@ from drf_spectacular.utils import extend_schema, OpenApiExample
     summary='Descrição curta da operação',
     description='''
     Descrição detalhada da operação.
-    
+
     **Permissões:** Quem pode acessar
     **Paginação:** Informações sobre paginação (se aplicável)
-    
+
     **Retorno:**
     - Lista dos campos retornados
     ''',
     request=SerializerDeInput,  # Para POST/PUT
     responses={
-        200: SerializerDeOutput,
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão'},
-        404: {'description': 'Não encontrado'},
+        status.HTTP_200_OK: SerializerDeOutput,
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Não encontrado'},
     },
     examples=[  # Opcional, mas recomendado
         OpenApiExample(
@@ -345,6 +399,7 @@ class MinhaView(BasicGetAPIView):
 ### Padrões de Tags
 
 Use tags consistentes para agrupar endpoints no Swagger:
+
 - `Auth` - Autenticação e tokens
 - `Usuarios` - Operações de usuários
 - `Usuarios.Password reset` - Reset de senha
@@ -353,6 +408,7 @@ Use tags consistentes para agrupar endpoints no Swagger:
 ### Serializers para Documentação
 
 Para endpoints de input (POST/PUT), crie serializers separados quando necessário:
+
 - `SerializerInput` - Para documentar o request body
 - `SerializerResponse` - Para documentar a resposta
 
@@ -400,24 +456,24 @@ O arquivo `Usuarios/models-teste.py` contém a tradução completa do DER para D
 
 ### Modelos e Relacionamentos
 
-| Modelo          | Descrição                       | Relacionamentos                                            |
-| --------------- | ------------------------------- | ---------------------------------------------------------- |
-| **Campus**      | Campus da instituição           | 1:N com Usuario                                            |
-| **Cargo**       | Cargos na instituição           | Entidade independente                                      |
-| **Empresa**     | Empresa/Instituição externa     | 1:N com Terceirizado, 1:N com Estagiario                   |
-| **Curso**       | Cursos para estagiários         | 1:N com Estagiario                                         |
-| **Setor**       | Setor dentro do campus          | 1:N com Atividade, M:N com Usuario (via UsuarioSetor)      |
-| **Atividade**   | Atividade dentro de um setor    | 1:N com Funcao                                             |
-| **Funcao**      | Função dentro de uma atividade  | N:1 com Atividade                                          |
-| **Usuario**     | Classe base central (login CPF) | Herança para todos os tipos, 1:N com Contato/Endereco/etc  |
-| **UsuarioSetor**| Tabela associativa              | M:N entre Usuario e Setor (com e_responsavel, monitor)     |
-| **Contato**     | Email/telefone do usuário       | N:1 com Usuario                                            |
-| **Endereco**    | Endereço do usuário             | N:1 com Usuario                                            |
-| **Matricula**   | Carteirinha/matrícula           | N:1 com Usuario                                            |
-| **Servidor**    | Servidor público                | Herda de Usuario (OneToOne)                                |
-| **Terceirizado**| Funcionário terceirizado        | Herda de Usuario, N:1 com Empresa                          |
-| **Aluno**       | Aluno matriculado               | Herda de Usuario (OneToOne)                                |
-| **Estagiario**  | Estagiário                      | Herda de Usuario, N:1 com Empresa, N:1 com Curso           |
+| Modelo           | Descrição                       | Relacionamentos                                           |
+| ---------------- | ------------------------------- | --------------------------------------------------------- |
+| **Campus**       | Campus da instituição           | 1:N com Usuario                                           |
+| **Cargo**        | Cargos na instituição           | Entidade independente                                     |
+| **Empresa**      | Empresa/Instituição externa     | 1:N com Terceirizado, 1:N com Estagiario                  |
+| **Curso**        | Cursos para estagiários         | 1:N com Estagiario                                        |
+| **Setor**        | Setor dentro do campus          | 1:N com Atividade, M:N com Usuario (via UsuarioSetor)     |
+| **Atividade**    | Atividade dentro de um setor    | 1:N com Funcao                                            |
+| **Funcao**       | Função dentro de uma atividade  | N:1 com Atividade                                         |
+| **Usuario**      | Classe base central (login CPF) | Herança para todos os tipos, 1:N com Contato/Endereco/etc |
+| **UsuarioSetor** | Tabela associativa              | M:N entre Usuario e Setor (com e_responsavel, monitor)    |
+| **Contato**      | Email/telefone do usuário       | N:1 com Usuario                                           |
+| **Endereco**     | Endereço do usuário             | N:1 com Usuario                                           |
+| **Matricula**    | Carteirinha/matrícula           | N:1 com Usuario                                           |
+| **Servidor**     | Servidor público                | Herda de Usuario (OneToOne)                               |
+| **Terceirizado** | Funcionário terceirizado        | Herda de Usuario, N:1 com Empresa                         |
+| **Aluno**        | Aluno matriculado               | Herda de Usuario (OneToOne)                               |
+| **Estagiario**   | Estagiário                      | Herda de Usuario, N:1 com Empresa, N:1 com Curso          |
 
 ### Apps Sugeridos (Ordem de Criação)
 
@@ -469,7 +525,7 @@ class Aluno(BasicModel):
 class Usuario(AbstractBaseUser, BasicModel):
     USERNAME_FIELD = 'cpf'
     REQUIRED_FIELDS = ['nome']
-    
+
     # campos...
     cpf = models.CharField('CPF', max_length=11, unique=True)
     nome = models.CharField('Nome', max_length=255)

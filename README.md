@@ -1,346 +1,370 @@
-# Base DRF App - Django 5 + DRF 3.16
+# Cortex API - IFPI Campus Floriano
 
 [![Django](https://img.shields.io/badge/Django-5.2.7-green.svg)](https://www.djangoproject.com/)
 [![DRF](https://img.shields.io/badge/DRF-3.16.1-red.svg)](https://www.django-rest-framework.org/)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-336791.svg)](https://www.postgresql.org/)
 
-Projeto base modular para desenvolvimento de APIs REST com Django e Django Rest Framework, implementando arquitetura em camadas bem definidas.
+Reformulação completa da **API Cortex**, plataforma institucional para servir dados de forma segura e estruturada para aplicações do **IFPI - Campus Floriano**.
 
-## 🎯 Objetivo
-
-Fornecer uma base sólida, profissional e escalável para desenvolvimento de APIs, com separação clara de responsabilidades através de camadas arquiteturais (Business, Rules, Helpers, State).
-
-## ✨ Características
-
-- 🏗️ **Arquitetura em Camadas**: Business, Rules, Helpers e State
-- 🔧 **Modular**: Fácil extensão com novos apps
-- 📦 **Reutilizável**: Models, mixins e utilitários base
-- 🧪 **Testável**: Camadas desacopladas facilitam testes
-- 📝 **Bem Documentado**: Exemplos e guias completos
-- ⚡ **Produção Ready**: Configurações para desenvolvimento e produção
-- 🎨 **Clean Code**: Segue PEP8 e boas práticas Django/DRF
-
-## 🏗️ Estrutura do Projeto
-
-```
-base-drf-app/
-│
-├── AppCore/                    # Módulo principal
-│   ├── core/                   # Camadas de arquitetura base
-│   │   ├── business.py         # Lógica de negócios
-│   │   ├── rules.py            # Regras de validação
-│   │   ├── helpers.py          # Queries e utilitários
-│   │   ├── state.py            # Máquina de estados
-│   │   └── mixins.py           # Integração com models
-│   ├── common/                 # Funcionalidades comuns
-│   ├── util/                   # Utilitários gerais
-│   └── basics/                 # Models e componentes base
-│
-├── usuarios/                      # App exemplo completo
-│   ├── models.py
-│   ├── business.py
-│   ├── rules.py
-│   ├── helpers.py
-│   └── admin.py
-│
-├── auth/                       # Autenticação
-├── BaseDRFApp/                 # Configurações Django
-├── ARCHITECTURE.md             # Documentação da arquitetura
-├── EXAMPLES.py                 # Exemplos de uso
-├── IMPROVEMENTS.md             # Sugestões de melhorias
-└── create_app.py               # Script para criar novos apps
-```
-
-## 🚀 Quick Start
-
-### Instalação
-
-```bash
-# Clone o repositório
-git clone <repository-url>
-cd base-drf-app
-
-# Crie ambiente virtual
-python -m venv venv
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # Linux/Mac
-
-# Instale dependências
-pip install -r requirements.txt
-
-# Configure variáveis de ambiente
-copy .env.example .env  # Edite conforme necessário
-
-# Execute migrações
-python manage.py makemigrations
-python manage.py migrate
-
-# Crie superusuário
-python manage.py createsuperuser
-
-# Execute o servidor
-python manage.py runserver
-```
-
-### Criar Novo App
-
-```bash
-# Use o script auxiliar
-python create_app.py nome_do_app
-
-# Ou manualmente
-mkdir nome_do_app
-cd nome_do_app
-# Crie os arquivos: __init__.py, apps.py, models.py, business.py, rules.py, helpers.py
-```
-
-## 📚 Documentação
-
-### Arquitetura em Camadas
-
-#### 1. **Rules** - Regras de Negócio
-
-```python
-from AppCore.core.rules import BaseRules
-
-class ProdutoRules(BaseRules):
-    def can_create(self) -> bool:
-        # Validações antes de criar
-        return True
-```
-
-#### 2. **Business** - Lógica de Negócio
-
-```python
-from AppCore.core.business import BaseBusiness
-
-class ProdutoBusiness(BaseBusiness):
-    rules_class = ProdutoRules
-
-    def create(self, **data):
-        if not self.rules.can_create():
-            raise BusinessException('Não permitido')
-        return Produto.objects.create(**data)
-```
-
-#### 3. **Helpers** - Queries e Utilitários
-
-```python
-from AppCore.core.helpers import BaseHelpers
-
-class ProdutoHelpers(BaseHelpers):
-    def get_em_estoque(self):
-        return self.get_queryset().filter(quantidade__gt=0)
-```
-
-#### 4. **State** - Máquina de Estados
-
-```python
-from AppCore.core.state import ModelState, StateMachineBuilder, ModelStateMixin
-
-# Definir estados
-class ProdutoState(ModelState):
-    field_status_name = 'status'
-
-class ProdutoPendenteState(ProdutoState):
-    status_permissions = [STATUS_APROVADO, STATUS_REJEITADO]
-
-    def can_aprovar(self):
-        return True
-
-class ProdutoStateBuilder(StateMachineBuilder):
-    STATE_MACHINE_CLASSES = {
-        STATUS_PENDENTE: ProdutoPendenteState,
-        # ...
-    }
-
-# Usar no modelo
-class Produto(ModelStateMixin, models.Model):
-    status = models.IntegerField(choices=CHOICES_STATUS)
-    builder_class = ProdutoStateBuilder
-
-    @property
-    def state(self):
-        return self.get_model_state()
-
-# Usar no business/views
-if not produto.state.can_aprovar():
-    raise SystemExceptionError('Não pode aprovar')
-```
-
-#### 5. **Model** - Integração
-
-```python
-from AppCore.core.mixins import LayeredModelMixin
-
-class Produto(LayeredModelMixin, models.Model):
-    business_class = ProdutoBusiness
-    rules_class = ProdutoRules
-    helpers_class = ProdutoHelpers
-
-    # Agora você pode usar:
-    # produto.business.create(...)
-    # produto.rules.can_update()
-    # Produto.get_helpers().get_em_estoque()
-```
-
-### Documentação Completa
-
-- 📖 [ARCHITECTURE.md](ARCHITECTURE.md) - Arquitetura detalhada
-- 💡 [EXAMPLES.py](EXAMPLES.py) - Exemplos práticos
-- 🚀 [IMPROVEMENTS.md](IMPROVEMENTS.md) - Melhorias e padrões avançados
-- 🎯 [AppCore/core/state/INDEX.md](AppCore/core/state/INDEX.md) - **State Pattern (NOVO!)**
-
-## 🔧 Tecnologias
-
-- **Django** 5.2.7 - Framework web
-- **DRF** 3.16.1 - REST Framework
-- **SimpleJWT** 5.5.1 - Autenticação JWT
-- **drf-spectacular** 0.28.0 - Documentação OpenAPI
-- **django-filter** 25.1 - Filtragem avançada
-- **simple-history** 3.10.1 - Auditoria de mudanças
-- **django-cors-headers** 4.9.0 - CORS
-- **PostgreSQL** - Banco de dados (suporte a SQLite também)
-
-## 📦 Apps Incluídos
-
-### AppCore.core
-
-Camadas base de arquitetura (Business, Rules, Helpers, State, Mixins).
-
-### AppCore.basics
-
-Models base reutilizáveis:
-
-- `TimeStampedModel` - created_at, updated_at
-- `ActiveModel` - is_active
-- `SoftDeleteModel` - soft delete
-- `BaseModel` - Combinação de todos
-
-### usuarios
-
-Exemplo completo de implementação:
-
-- Model User customizado
-- Integração completa com todas as camadas
-- Admin configurado
-- Exemplos de uso
-
-## 🎓 Conceitos Importantes
-
-### Separação de Responsabilidades
-
-- **Rules**: Valida SE pode fazer algo (retorna bool ou lança exceção)
-- **Business**: Orquestra COMO fazer algo (executa operações)
-- **Helpers**: Fornece FERRAMENTAS para fazer (queries, utils)
-- **State**: Gerencia ESTADOS e transições baseados no campo status
-
-### State Pattern - Novo! 🎉
-
-O módulo **State Pattern** está **100% implementado** e permite controlar permissões e transições de estado através do campo `status` dos modelos.
-
-**Principais recursos:**
-
-- ✅ Controle de permissões por estado
-- ✅ Validação de transições
-- ✅ Cache automático
-- ✅ Classes CSS dinâmicas para UI
-- ✅ Totalmente testado (20+ testes)
-- ✅ Documentação completa (6 documentos)
-
-**Quick Start:**
-
-```python
-# 1. Criar estados
-class DocumentoState(ModelState):
-    def can_aprovar(self): return False
-
-class DocumentoPendenteState(DocumentoState):
-    status_permissions = [STATUS_APROVADO]
-    def can_aprovar(self): return True
-
-# 2. Adicionar ao modelo
-class Documento(ModelStateMixin, models.Model):
-    status = models.IntegerField()
-    builder_class = DocumentoStateBuilder
-
-    @property
-    def state(self):
-        return self.get_model_state()
-
-# 3. Usar
-if documento.state.can_aprovar():
-    documento.status = STATUS_APROVADO
-    documento.save()
-```
-
-**Documentação completa:**
-
-- 📚 [Índice Geral](AppCore/core/state/INDEX.md)
-- 🚀 [Quick Start](AppCore/core/state/README.md)
-- 📖 [Guia de Implementação](AppCore/core/state/IMPLEMENTATION_GUIDE.md)
-- 💡 [Exemplos Detalhados](AppCore/core/state/USAGE_EXAMPLES.md)
-- 🎨 [Diagramas](AppCore/core/state/DIAGRAMS.md)
-- ❓ [FAQ](AppCore/core/state/FAQ.md)
-
-### Boas Práticas
-
-✅ **FAÇA:**
-
-- Use Business para operações CRUD
-- Use Rules para validações
-- Use Helpers para queries
-- Use aspas simples sempre
-- Mantenha camadas desacopladas
-
-❌ **NÃO FAÇA:**
-
-- Lógica de negócio em views
-- Validações complexas em models
-- Queries em Rules
-- Aspas duplas
-
-## 🧪 Testes
-
-```bash
-# Executar todos os testes
-pytest
-
-# Executar testes específicos
-pytest usuarios/tests/
-
-# Com cobertura
-pytest --cov=.
-```
-
-## 📝 Convenções
-
-- **Módulos principais**: Primeira letra maiúscula (`AppCore`)
-- **Apps**: Minúsculas (`usuarios`, `auth`)
-- **Arquivos**: Minúsculas (`business.py`, `rules.py`)
-- **Aspas**: SEMPRE simples (`'texto'`)
-- **Imports**: Organizados e absolutos quando possível
-
-## 🤝 Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -am 'Add: nova feature'`)
-4. Push para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT.
-
-## 👨‍💻 Autor
-
-Lucas Soares (@soareslucas9090)
-
-## 🙏 Agradecimentos
-
-Desenvolvido com ❤️ seguindo as melhores práticas de Django 5 e DRF 3.16.
+Esta versão representa uma evolução do projeto anterior, com uma nova arquitetura em camadas que promove separação clara de responsabilidades, manutenibilidade e escalabilidade.
 
 ---
 
-**Dúvidas?** Consulte a documentação em `ARCHITECTURE.md` ou os exemplos em `EXAMPLES.py`
+## 📖 Sobre o Projeto
+
+O **Cortex API** é uma API REST centralizada para servir dados institucionais do IFPI Campus Floriano. 
+
+- Segue o padrão **REST** (não 100% RESTful, equilibrando desempenho e simplicidade)
+- **Autenticação via JWT** (SimpleJWT)
+- **Documentação interativa** via Swagger (drf-spectacular)
+- **Arquitetura em camadas** para organização do código
+
+---
+
+## 🔧 Stack Técnica
+
+| Tecnologia | Versão | Descrição |
+|------------|--------|-----------|
+| **Django** | 5.2.7 | Framework web |
+| **Django Rest Framework** | 3.16.1 | REST Framework |
+| **PostgreSQL** | 13+ | Banco de dados (SQLite para desenvolvimento) |
+| **SimpleJWT** | 5.5.1 | Autenticação JWT (Access Token 30min, Refresh Token 7 dias) |
+| **drf-spectacular** | 0.28.0 | Documentação Swagger/ReDoc |
+| **django-simple-history** | 3.10.1 | Auditoria de mudanças |
+| **django-cors-headers** | 4.9.0 | Configuração CORS |
+| **Gunicorn** | - | Deploy Linux |
+| **Waitress** | - | Deploy Windows |
+| **WhiteNoise** | - | Static Files |
+| **SMTP** | - | Email (padrão Gmail) |
+
+---
+
+## 🏗️ Arquitetura em Camadas
+
+O projeto implementa uma arquitetura modular de 4 camadas bem definidas.
+
+### ⚠️ Princípio Fundamental: Views Leves
+
+**Views devem ser "burras"**: Apenas recebem dados, delegam para o Business, e retornam resposta.
+
+### Hierarquia de Chamadas
+
+```
+View (entrada/saída)
+  └── Business (orquestração)
+        ├── Rules (validações)
+        ├── Helpers (queries/utils)
+        └── State (transições de estado)
+```
+
+### Camadas
+
+| Camada | Arquivo | Responsabilidade |
+|--------|---------|------------------|
+| **Business** | `business.py` | Orquestra COMO fazer operações (CRUD, workflows complexos) |
+| **Rules** | `rules.py` | Valida SE uma ação pode ser executada (retorna `bool` ou lança exceção) |
+| **Helpers** | `helpers.py` | Fornece ferramentas (queries customizadas, formatações, utils) |
+| **State** | `state.py` | Máquina de estados (futuro) |
+
+**Importante:**
+- Views só chamam **Business**
+- Business pode chamar **Rules**, **Helpers** e **State**
+- Rules, Helpers e State **NÃO** chamam uns aos outros diretamente
+
+---
+
+## ✨ Recursos Implementados
+
+- ✅ Gerenciamento completo de usuários (Servidor, Aluno, Terceirizado, Estagiário)
+- ✅ Estrutura organizacional (Campus, Setores, Empresas, Cargos, Atividades, Funções)
+- ✅ Vínculos (Matrículas)
+- ✅ Sistema de permissões
+- ✅ Autenticação JWT
+- ✅ Documentação Swagger completa e interativa
+- ✅ Auditoria automática de mudanças (django-simple-history)
+
+---
+
+## 🚀 Instalação e Configuração
+
+### Requisitos
+
+- Python 3.10 ou superior (recomendado 3.11)
+- PostgreSQL (ou SQLite para desenvolvimento)
+
+### Setup
+
+```bash
+# Criar ambiente virtual
+python -m venv venv
+
+# Ativar ambiente virtual
+# Windows:
+venv\Scripts\activate
+# Linux/Mac:
+source venv/bin/activate
+
+# Instalar dependências
+pip install -r requirements.txt
+
+# Configurar variáveis de ambiente (criar arquivo .env)
+# Ver seção "Variáveis de Ambiente" abaixo
+
+# Executar migrações
+python manage.py migrate
+
+# Coletar arquivos estáticos (necessário para Swagger)
+python manage.py collectstatic
+
+# Criar superusuário
+python manage.py createsuperuser
+
+# Rodar servidor de desenvolvimento
+python manage.py runserver
+```
+
+---
+
+## 🔐 Variáveis de Ambiente
+
+Criar arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+```env
+# Django Settings
+DJANGO_SECRET_KEY=sua_chave_secreta_do_django
+DJANGO_DEBUG=True  # Usar False em produção
+ALLOWED_HOSTS=localhost,127.0.0.1  # Em produção, especificar domínios reais
+
+# CORS e CSRF
+CSRF_TRUSTED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+CORS_ORIGIN_WHITELIST=http://localhost:3000,http://127.0.0.1:3000
+INTERNAL_IPS=127.0.0.1,localhost
+
+# Database (PostgreSQL)
+DATABASE_ENGINE=django.db.backends.postgresql
+DATABASE_NAME=nome_do_banco
+DATABASE_USER=usuario_do_banco
+DATABASE_PASSWORD=senha_do_banco
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+
+# Email (configuração padrão para Gmail)
+DEFAULT_FROM_EMAIL=seu_email@gmail.com
+EMAIL_HOST_USER=seu_email@gmail.com
+EMAIL_HOST_PASSWORD=sua_senha_de_app
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+```
+
+**Nota:** Para desenvolvimento, pode-se omitir as variáveis de banco de dados (usará SQLite por padrão).
+
+---
+
+## 🖥️ Executando em Produção
+
+### Linux (Gunicorn)
+
+```bash
+gunicorn BaseDRFApp.wsgi --workers 2 --bind :8000 --access-logfile -
+```
+
+### Windows (Waitress)
+
+```bash
+waitress-serve --port=8000 BaseDRFApp.wsgi:application
+```
+
+---
+
+## 📚 Documentação da API
+
+Acesse a documentação interativa Swagger em:
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `/api/schema/swagger/` | Swagger UI |
+| `/api/schema/redoc/` | ReDoc |
+| `/api/schema/` | Schema JSON |
+
+### Autenticação na documentação
+
+1. Acesse `/api/token/` para obter o token de acesso
+2. Clique em "Authorize" no Swagger
+3. Cole o token de acesso no formato: `Bearer seu_token_aqui`
+
+---
+
+## 🔑 Autenticação
+
+O sistema usa autenticação **Bearer Token** (JWT):
+
+| Configuração | Valor |
+|--------------|-------|
+| **Login** | POST `/api/token/` com `cpf` e `senha` |
+| **Access Token** | Válido por 30 minutos |
+| **Refresh Token** | Válido por 7 dias |
+| **Header** | `Authorization: Bearer {seu_token_de_acesso}` |
+
+**⚠️ Importante:** O login é feito via **CPF**, não email.
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+novo_cortex/
+├── AppCore/                      # Núcleo da aplicação
+│   ├── basics/                   # Models, views, serializers base
+│   ├── core/                     # Camadas (Business, Rules, Helpers, State)
+│   └── common/                   # Utilitários (emails, textos)
+│
+├── Auth/                         # Autenticação
+│   └── auth/                     # Login, logout, refresh token
+│
+├── Usuarios/                     # Módulo de Usuários
+│   ├── usuario/                  # Model Usuario (login via CPF)
+│   ├── conta/                    # Contas de usuário
+│   └── usuario_setor/            # Relação usuário-setor
+│
+├── Perfis/                       # Perfis de usuário
+│   ├── aluno/
+│   ├── servidor/
+│   ├── terceirizado/
+│   └── estagiario/
+│
+├── EstruturaOrganizacional/      # Estrutura do IFPI
+│   ├── campus/
+│   ├── setor/
+│   ├── cargo/
+│   ├── empresa/
+│   ├── curso/
+│   ├── atividade/
+│   └── funcao/
+│
+├── Vinculos/                     # Vínculos institucionais
+│   └── matricula/
+│
+└── BaseDRFApp/                   # Configurações Django
+    ├── settings.py
+    ├── urls.py
+    └── wsgi.py
+```
+
+---
+
+## 🗃️ Modelos do Domínio
+
+### Hierarquia de Usuários
+
+```
+Usuario (Model base - Login via CPF)
+   │
+   ├── Servidor (OneToOne)
+   ├── Terceirizado (OneToOne + FK Empresa)
+   ├── Aluno (OneToOne)
+   └── Estagiario (OneToOne + FK Empresa + FK Curso)
+```
+
+### Principais Modelos
+
+| Modelo | Descrição |
+|--------|-----------|
+| **Usuario** | Model de autenticação (USERNAME_FIELD='cpf') |
+| **Campus** | Campus do IFPI |
+| **Setor** | Setores dentro do campus |
+| **Atividade** | Atividades dentro de um setor |
+| **Funcao** | Funções dentro de uma atividade |
+| **Empresa** | Empresas externas (para terceirizados/estagiários) |
+| **Cargo** | Cargos institucionais |
+| **Matricula** | Carteirinha/matrícula de usuários |
+| **UsuarioSetor** | Relação M:N entre Usuario e Setor (com flags `e_responsavel` e `monitor`) |
+
+---
+
+## 📝 Convenções de Código
+
+| Convenção | Padrão |
+|-----------|--------|
+| **Aspas** | SEMPRE simples (`'texto'`) |
+| **Idioma** | Português (variáveis, funções, comentários) |
+| **Nomenclatura de Apps** | snake_case minúsculo |
+| **Módulos principais** | PascalCase (`AppCore`, `Usuarios`) |
+| **Imports** | Organizados (stdlib → Django → DRF → AppCore → apps locais) |
+| **Timezone** | America/Fortaleza |
+| **Locale** | pt-BR |
+
+---
+
+## 📄 Paginação
+
+| Configuração | Valor |
+|--------------|-------|
+| **Padrão** | 10 itens por página |
+| **Query param** | `?paginacao=25` |
+| **Limites** | Mínimo 1, Máximo 100 |
+
+**Exemplos:**
+- `/api/usuarios/` → 10 itens
+- `/api/usuarios/?paginacao=50` → 50 itens
+
+---
+
+## 📦 Roadmap: Inserção de Usuários em Lote
+
+> **Status:** Funcionalidade planejada, ainda não implementada.
+
+O sistema suportará inserção em lote de usuários via:
+- Upload de arquivos Excel (.xlsx)
+- Endpoints REST com JSON
+- Painel Admin do Django
+
+---
+
+## 📖 Documentação Adicional
+
+Para informações detalhadas sobre a arquitetura e padrões do projeto, consulte:
+
+- `.github/copilot-instructions.md` - Guia completo para desenvolvimento
+
+---
+
+## 🤝 Contribuindo
+
+1. Clone o repositório
+2. Crie um branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Siga as convenções de código do projeto
+4. Consulte `.github/copilot-instructions.md` antes de implementar
+5. Faça commit das mudanças (`git commit -m 'Add: nova feature'`)
+6. Push para o branch (`git push origin feature/nova-feature`)
+7. Abra um Pull Request
+
+---
+
+## 🔒 Segurança
+
+- ✅ Autenticação JWT obrigatória (exceto endpoints públicos)
+- ✅ Permissões por tipo de usuário
+- ✅ Proteção CSRF
+- ✅ CORS configurável
+- ✅ Validação de senhas (mínimo 8 caracteres, maiúscula, minúscula, número, caractere especial)
+- ✅ Auditoria de mudanças (django-simple-history)
+
+---
+
+## 👨‍💻 Autor
+
+**Lucas Soares** (@soareslucas9090)
+
+Desenvolvido para o **IFPI - Campus Floriano**
+
+---
+
+## 📄 Licença
+
+Este projeto é de uso interno do IFPI - Campus Floriano.
+
+---
+
+**Dúvidas?** Consulte a documentação em `.github/copilot-instructions.md`

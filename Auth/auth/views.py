@@ -1,4 +1,6 @@
 from drf_spectacular.utils import extend_schema, OpenApiExample
+from rest_framework import status
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -25,8 +27,8 @@ from .serializers import LoginSerializer, LoginInputSerializer, LoginResponseSer
     ''',
     request=LoginInputSerializer,
     responses={
-        200: LoginResponseSerializer,
-        401: {'description': 'Credenciais inválidas'},
+        status.HTTP_200_OK: LoginResponseSerializer,
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Credenciais inválidas'},
     },
     examples=[
         OpenApiExample(

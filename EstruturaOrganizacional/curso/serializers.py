@@ -1,3 +1,6 @@
+from typing import Optional
+
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 
@@ -17,13 +20,15 @@ class CursoListaSerializer(serializers.Serializer):
     descricao_resumida = serializers.SerializerMethodField()
     total_estagiarios = serializers.SerializerMethodField()
 
-    def get_descricao_resumida(self, obj):
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_descricao_resumida(self, obj) -> Optional[str]:
         """Retorna a descrição resumida."""
         if obj.descricao and len(obj.descricao) > 100:
             return f'{obj.descricao[:100]}...'
         return obj.descricao
 
-    def get_total_estagiarios(self, obj):
+    @extend_schema_field(serializers.IntegerField())
+    def get_total_estagiarios(self, obj) -> int:
         """Retorna o total de estagiários do curso."""
         return obj.estagiarios.count()
 
@@ -183,6 +188,27 @@ class CursoCriarSerializer(serializers.Serializer):
     """
     nome = serializers.CharField(
         max_length=255,
+        help_text='Nome do curso'
+    )
+    descricao = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text='Descrição do curso'
+    )
+
+
+class CursoEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de um curso existente.
+    
+    **Campos opcionais:**
+    - nome: Nome do curso
+    - descricao: Descrição do curso
+    """
+    nome = serializers.CharField(
+        max_length=255,
+        required=False,
         help_text='Nome do curso'
     )
     descricao = serializers.CharField(

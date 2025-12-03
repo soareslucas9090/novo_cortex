@@ -1,11 +1,13 @@
 from django.db import models
 
-from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BasicModel
+from AppCore.core.business.business_mixin import ModelBusinessMixin
 
+from EstruturaOrganizacional.atividade.business import AtividadeBusiness
 from EstruturaOrganizacional.setor.models import Setor
 
 
-class Atividade(BasicModel):
+class Atividade(ModelBusinessMixin, BasicModel):
     """
     Representa uma atividade dentro de um setor.
     
@@ -22,8 +24,8 @@ class Atividade(BasicModel):
     descricao = models.TextField(
         'Descrição',
     )
-
-    objects = Base404ExceptionManager()
+    
+    business_class = AtividadeBusiness
 
     class Meta:
         db_table = 'atividades'

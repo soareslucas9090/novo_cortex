@@ -1,9 +1,12 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
+
+from EstruturaOrganizacional.curso.business import CursoBusiness
 
 
-class Curso(BasicModel):
+class Curso(ModelBusinessMixin, BasicModel):
     """
     Representa um curso (para estagiários).
     
@@ -20,6 +23,7 @@ class Curso(BasicModel):
         null=True,
     )
 
+    business_class = CursoBusiness
     objects = Base404ExceptionManager()
 
     class Meta:

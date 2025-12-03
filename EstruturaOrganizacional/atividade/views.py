@@ -1,17 +1,20 @@
 from drf_spectacular.utils import extend_schema
 
+from rest_framework import status
+
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
 from EstruturaOrganizacional.atividade.models import Atividade
 from EstruturaOrganizacional.atividade.serializers import (
     AtividadeListaSerializer,
     AtividadeCriarSerializer,
+    AtividadeEditarSerializer,
 )
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Atividade'],
     summary='Listar todas as atividades',
     description='''
     Retorna uma lista paginada de todas as atividades cadastradas no sistema.
@@ -26,7 +29,7 @@ from EstruturaOrganizacional.atividade.serializers import (
     - id, descricao, descricao_resumida, setor, total_funcoes
     ''',
     responses={
-        200: AtividadeListaSerializer(many=True),
+        status.HTTP_200_OK: AtividadeListaSerializer(many=True),
     },
 )
 class AtividadeListaView(AllowAnyMixin, BasicGetAPIView):
@@ -44,7 +47,7 @@ class AtividadeListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Atividade'],
     summary='Criar uma nova atividade',
     description='''
     Cria uma nova atividade no sistema.
@@ -57,10 +60,10 @@ class AtividadeListaView(AllowAnyMixin, BasicGetAPIView):
     ''',
     request=AtividadeCriarSerializer,
     responses={
-        200: {'description': 'Atividade criada com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
+        status.HTTP_200_OK: {'description': 'Atividade criada com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
     },
 )
 class AtividadeCriarView(IsAdminMixin, BasicPostAPIView):
@@ -75,4 +78,42 @@ class AtividadeCriarView(IsAdminMixin, BasicPostAPIView):
     def do_action_post(self, serializer_data, request):
         setor = serializer_data.pop('setor')
         Atividade.objects.create(setor=setor, **serializer_data)
-        return {'status_code': 201}
+        return {'status_code': status.HTTP_201_CREATED}
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional.Atividade'],
+    summary='Editar uma atividade',
+    description='''
+    Edita os dados de uma atividade existente.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Campos editáveis (todos opcionais):**
+    - setor_id: ID do setor ao qual a atividade pertence
+    - descricao: Descrição da atividade
+    
+    **Observação:** Apenas envie os campos que deseja alterar.
+    ''',
+    request=AtividadeEditarSerializer,
+    responses={
+        status.HTTP_200_OK: {'description': 'Atividade editada com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Atividade não encontrada'},
+    },
+)
+class AtividadeEditarView(IsAdminMixin, BasicPutAPIView):
+    """
+    View para edição de uma atividade existente.
+    
+    Apenas administradores podem editar atividades.
+    """
+    serializer_class = AtividadeEditarSerializer
+    mensagem_sucesso = 'Atividade editada com sucesso.'
+    queryset = Atividade.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_put(self, serializer_data, request):
+        self.object.business.atualizar_dados(serializer_data)

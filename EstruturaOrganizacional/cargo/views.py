@@ -1,17 +1,20 @@
 from drf_spectacular.utils import extend_schema
 
+from rest_framework import status
+
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
 from EstruturaOrganizacional.cargo.models import Cargo
 from EstruturaOrganizacional.cargo.serializers import (
     CargoListaSerializer,
     CargoCriarSerializer,
+    CargoEditarSerializer,
 )
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Cargo'],
     summary='Listar todos os cargos',
     description='''
     Retorna uma lista paginada de todos os cargos cadastrados no sistema.
@@ -26,7 +29,7 @@ from EstruturaOrganizacional.cargo.serializers import (
     - id, descricao
     ''',
     responses={
-        200: CargoListaSerializer(many=True),
+        status.HTTP_200_OK: CargoListaSerializer(many=True),
     },
 )
 class CargoListaView(AllowAnyMixin, BasicGetAPIView):
@@ -44,7 +47,7 @@ class CargoListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Cargo'],
     summary='Criar um novo cargo',
     description='''
     Cria um novo cargo no sistema.
@@ -57,9 +60,9 @@ class CargoListaView(AllowAnyMixin, BasicGetAPIView):
     request=CargoCriarSerializer,
     responses={
         201: {'description': 'Cargo criado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
     },
 )
 class CargoCriarView(IsAdminMixin, BasicPostAPIView):
@@ -73,4 +76,49 @@ class CargoCriarView(IsAdminMixin, BasicPostAPIView):
 
     def do_action_post(self, serializer_data, request):
         Cargo.objects.create(**serializer_data)
-        return {'status_code': 201}
+        return {'status_code': status.HTTP_201_CREATED}
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional.Cargo'],
+    summary='Editar um cargo',
+    description='''
+    Edita os dados de um cargo existente.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Campos editáveis (todos opcionais):**
+    - descricao: Descrição do cargo
+    
+    **Observação:** Apenas envie os campos que deseja alterar.
+    ''',
+    request=CargoEditarSerializer,
+    responses={
+        status.HTTP_200_OK: {'description': 'Cargo editado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Cargo não encontrado'},
+    },
+)
+class CargoEditarView(IsAdminMixin, BasicPutAPIView):
+    """
+    View para edição de um cargo existente.
+    
+    Apenas administradores podem editar cargos.
+    """
+    serializer_class = CargoEditarSerializer
+    mensagem_sucesso = 'Cargo editado com sucesso.'
+    queryset = Cargo.objects.all()
+    lookup_field = 'pk'
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        try:
+            context['instance'] = self.get_object()
+        except Exception:
+            pass
+        return context
+
+    def do_action_put(self, serializer_data, request):
+        self.object.business.atualizar_dados(serializer_data)

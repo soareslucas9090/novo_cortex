@@ -1,5 +1,7 @@
 from drf_spectacular.utils import extend_schema
 
+from rest_framework import status
+
 from AppCore.basics.mixins.mixins import IsOwnerOrAdminMixin, IsAdminMixin
 from AppCore.basics.views.basic_views import BasicGetAPIView, BasicRetrieveAPIView
 
@@ -28,9 +30,9 @@ from Usuarios.usuario.serializers import UsuarioListaDetalhadaSerializer, Usuari
     - total_setores_ativos
     ''',
     responses={
-        200: UsuarioListaDetalhadaSerializer(many=True),
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
+        status.HTTP_200_OK: UsuarioListaDetalhadaSerializer(many=True),
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
     },
 )
 class UsuarioListaView(IsAdminMixin, BasicGetAPIView):
@@ -74,10 +76,10 @@ class UsuarioListaView(IsAdminMixin, BasicGetAPIView):
     - Perfis: servidor, aluno, terceirizado, estagiário (se existirem)
     ''',
     responses={
-        200: UsuarioCompletoSerializer,
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão para acessar este recurso'},
-        404: {'description': 'Usuário não encontrado'},
+        status.HTTP_200_OK: UsuarioCompletoSerializer,
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão para acessar este recurso'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Usuário não encontrado'},
     },
 )
 class UsuarioRetrieveView(IsOwnerOrAdminMixin, BasicRetrieveAPIView):

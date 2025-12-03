@@ -12,4 +12,4 @@ class ModelBusinessMixin:
     def get_model_business_class(self):
         if not self.business_class:
             raise ValueError('business_class não foi definido no model')
-        return self.business_class(instance=self)
+        return self.business_class(object_instance=self)

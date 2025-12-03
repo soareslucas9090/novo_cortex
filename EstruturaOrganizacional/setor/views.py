@@ -1,17 +1,20 @@
 from drf_spectacular.utils import extend_schema
 
+from rest_framework import status
+
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
 
 from EstruturaOrganizacional.setor.models import Setor
 from EstruturaOrganizacional.setor.serializers import (
     SetorListaSerializer,
     SetorCriarSerializer,
+    SetorEditarSerializer,
 )
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Setor'],
     summary='Listar todos os setores',
     description='''
     Retorna uma lista paginada de todos os setores cadastrados no sistema.
@@ -23,10 +26,10 @@ from EstruturaOrganizacional.setor.serializers import (
     - Use o query param `paginacao` para alterar (entre 1 e 100)
     
     **Retorno:**
-    - id, nome, is_active, total_membros
+    - id, nome, sigla, is_active, total_membros
     ''',
     responses={
-        200: SetorListaSerializer(many=True),
+        status.HTTP_200_OK: SetorListaSerializer(many=True),
     },
 )
 class SetorListaView(AllowAnyMixin, BasicGetAPIView):
@@ -44,7 +47,7 @@ class SetorListaView(AllowAnyMixin, BasicGetAPIView):
 
 
 @extend_schema(
-    tags=['Estrutura Organizacional'],
+    tags=['Estrutura Organizacional.Setor'],
     summary='Criar um novo setor',
     description='''
     Cria um novo setor no sistema.
@@ -55,14 +58,15 @@ class SetorListaView(AllowAnyMixin, BasicGetAPIView):
     - nome: Nome do setor
     
     **Campos opcionais:**
+    - sigla: Sigla do setor
     - is_active: Se o setor está ativo (padrão: True)
     ''',
     request=SetorCriarSerializer,
     responses={
-        200: {'description': 'Setor criado com sucesso'},
-        400: {'description': 'Dados inválidos'},
-        401: {'description': 'Não autenticado'},
-        403: {'description': 'Sem permissão de administrador'},
+        status.HTTP_200_OK: {'description': 'Setor criado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
     },
 )
 class SetorCriarView(IsAdminMixin, BasicPostAPIView):
@@ -76,4 +80,43 @@ class SetorCriarView(IsAdminMixin, BasicPostAPIView):
 
     def do_action_post(self, serializer_data, request):
         Setor.objects.create(**serializer_data)
-        return {'status_code': 201}
+        return {'status_code': status.HTTP_201_CREATED}
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional.Setor'],
+    summary='Editar um setor',
+    description='''
+    Edita os dados de um setor existente.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Campos editáveis (todos opcionais):**
+    - nome: Nome do setor
+    - sigla: Sigla do setor
+    - is_active: Se o setor está ativo
+    
+    **Observação:** Apenas envie os campos que deseja alterar.
+    ''',
+    request=SetorEditarSerializer,
+    responses={
+        status.HTTP_200_OK: {'description': 'Setor editado com sucesso'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Dados inválidos'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Setor não encontrado'},
+    },
+)
+class SetorEditarView(IsAdminMixin, BasicPutAPIView):
+    """
+    View para edição de um setor existente.
+    
+    Apenas administradores podem editar setores.
+    """
+    serializer_class = SetorEditarSerializer
+    mensagem_sucesso = 'Setor editado com sucesso.'
+    queryset = Setor.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_put(self, serializer_data, request):
+        self.object.business.atualizar_dados(serializer_data)

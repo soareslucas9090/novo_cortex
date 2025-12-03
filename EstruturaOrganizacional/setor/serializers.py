@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from Usuarios.usuario.serializers import UsuarioReferenciaSerializer
@@ -15,10 +16,12 @@ class SetorListaSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
+    sigla = serializers.CharField(read_only=True, allow_null=True)
     is_active = serializers.BooleanField(read_only=True)
     total_membros = serializers.SerializerMethodField()
 
-    def get_total_membros(self, obj):
+    @extend_schema_field(serializers.IntegerField())
+    def get_total_membros(self, obj) -> int:
         """Retorna o total de membros ativos no setor."""
         return obj.usuario_setores.filter(data_saida__isnull=True).count()
 
@@ -35,6 +38,7 @@ class SetorDetalheSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
+    sigla = serializers.CharField(read_only=True, allow_null=True)
     is_active = serializers.BooleanField(read_only=True)
     
     # Atividades
@@ -84,6 +88,7 @@ class SetorResumoSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
+    sigla = serializers.CharField(read_only=True, allow_null=True)
     is_active = serializers.BooleanField(read_only=True)
 
 
@@ -95,6 +100,7 @@ class SetorComMembrosSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
+    sigla = serializers.CharField(read_only=True, allow_null=True)
     is_active = serializers.BooleanField(read_only=True)
     
     # Membros agrupados
@@ -166,6 +172,7 @@ class SetorComAtividadesSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(read_only=True)
     nome = serializers.CharField(read_only=True)
+    sigla = serializers.CharField(read_only=True, allow_null=True)
     is_active = serializers.BooleanField(read_only=True)
     
     # Atividades com funções
@@ -217,14 +224,49 @@ class SetorCriarSerializer(serializers.Serializer):
     - nome: Nome do setor
     
     **Campos opcionais:**
+    - sigla: Sigla do setor
     - is_active: Se o setor está ativo (padrão: True)
     """
     nome = serializers.CharField(
         max_length=255,
         help_text='Nome do setor'
     )
+    sigla = serializers.CharField(
+        max_length=50,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text='Sigla do setor'
+    )
     is_active = serializers.BooleanField(
         default=True,
+        required=False,
+        help_text='Se o setor está ativo'
+    )
+
+
+class SetorEditarSerializer(serializers.Serializer):
+    """
+    Serializer para edição de um setor existente.
+    
+    **Campos opcionais:**
+    - nome: Nome do setor
+    - sigla: Sigla do setor
+    - is_active: Se o setor está ativo
+    """
+    nome = serializers.CharField(
+        max_length=255,
+        required=False,
+        help_text='Nome do setor'
+    )
+    sigla = serializers.CharField(
+        max_length=50,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text='Sigla do setor'
+    )
+    is_active = serializers.BooleanField(
         required=False,
         help_text='Se o setor está ativo'
     )

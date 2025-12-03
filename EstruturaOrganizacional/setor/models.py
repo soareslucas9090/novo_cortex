@@ -1,9 +1,12 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
+
+from EstruturaOrganizacional.setor.business import SetorBusiness
 
 
-class Setor(BasicModel):
+class Setor(ModelBusinessMixin, BasicModel):
     """
     Representa um setor dentro do campus.
     
@@ -15,11 +18,18 @@ class Setor(BasicModel):
         'Nome',
         max_length=255,
     )
+    sigla = models.CharField(
+        'Sigla',
+        max_length=50,
+        blank=True,
+        null=True,
+    )
     is_active = models.BooleanField(
         'Ativo',
         default=True,
     )
 
+    business_class = SetorBusiness
     objects = Base404ExceptionManager()
 
     class Meta:
