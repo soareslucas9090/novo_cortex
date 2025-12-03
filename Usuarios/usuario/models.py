@@ -1,15 +1,15 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 
-from AppCore.basics.models.models import BaseUserManager, BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BaseManagerUser, BasicModel
 from AppCore.core.helpers.helpers_mixin import ModelHelperMixin
 from AppCore.core.business.business_mixin import ModelBusinessMixin
 
 
-class UsuarioManager(BaseUserManager, Base404ExceptionManager):
+class UsuarioManager(BaseManagerUser):
     """
     Manager customizado para Usuario.
-    Combina BaseUserManager (para criação de usuários) com Base404ExceptionManager.
+    Combina BaseManagerUser (para criação de usuários).
     """
     
     def create_user(self, cpf, nome, password=None, **extra_fields):
@@ -198,8 +198,6 @@ class Contato(BasicModel):
         null=True,
     )
 
-    objects = Base404ExceptionManager()
-
     class Meta:
         db_table = 'contatos'
         app_label = 'usuarios'
@@ -249,8 +247,6 @@ class Endereco(BasicModel):
         'Estado',
         max_length=2,
     )
-
-    objects = Base404ExceptionManager()
 
     class Meta:
         db_table = 'enderecos'

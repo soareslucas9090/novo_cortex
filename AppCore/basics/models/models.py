@@ -6,15 +6,21 @@ from simple_history.models import HistoricalRecords
 from AppCore.core.exceptions.exceptions import NotFoundException
 
 
-class Base404ExceptionManager(Manager):
+class BaseManager(Manager):
     def get(self, *args, **kwargs):
         try:
             return super().get(*args, **kwargs)
         except self.model.DoesNotExist as e:
             raise NotFoundException(f"{self.model._meta.verbose_name} não encontrado.")
+        
+    def filter(self, *args, **kwargs):
+        # Se o modelo tem campo 'ativo' e não foi passado no filtro, adiciona ativo=True
+        if hasattr(self.model, 'ativo') and 'ativo' not in kwargs:
+            kwargs['ativo'] = True
+        return super().filter(*args, **kwargs)
 
 
-class Base404ExceptionUserManager(BaseUserManager, Base404ExceptionManager):
+class BaseManagerUser(BaseUserManager, BaseManager):
     pass
 
 class BasicModel(models.Model):
@@ -22,7 +28,7 @@ class BasicModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(inherit=True)
     
-    objects = Base404ExceptionManager()
+    objects = BaseManager()
 
     class Meta:
         abstract = True

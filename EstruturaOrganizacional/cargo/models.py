@@ -1,6 +1,6 @@
 from django.db import models
 
-from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BasicModel, BaseManager
 from AppCore.core.business.business_mixin import ModelBusinessMixin
 
 from EstruturaOrganizacional.cargo.business import CargoBusiness
@@ -20,7 +20,6 @@ class Cargo(ModelBusinessMixin, BasicModel):
     )
 
     business_class = CargoBusiness
-    objects = Base404ExceptionManager()
 
     class Meta:
         db_table = 'cargos'

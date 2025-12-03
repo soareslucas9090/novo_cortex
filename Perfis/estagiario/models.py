@@ -1,6 +1,6 @@
 from django.db import models
 
-from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BasicModel, BaseManager
 
 
 class Estagiario(BasicModel):
@@ -50,8 +50,6 @@ class Estagiario(BasicModel):
         blank=True,
         null=True,
     )
-
-    objects = Base404ExceptionManager()
 
     class Meta:
         db_table = 'estagiarios'

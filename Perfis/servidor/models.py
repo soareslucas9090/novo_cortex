@@ -1,6 +1,6 @@
 from django.db import models
 
-from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BasicModel, BaseManager
 
 from . import choices
 
@@ -48,8 +48,6 @@ class Servidor(BasicModel):
         max_length=100,
         help_text='Ex: Professor, Técnico Administrativo, etc.',
     )
-
-    objects = Base404ExceptionManager()
 
     class Meta:
         db_table = 'servidores'

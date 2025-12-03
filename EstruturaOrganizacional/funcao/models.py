@@ -1,6 +1,6 @@
 from django.db import models
 
-from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BasicModel, BaseManager
 from AppCore.core.business.business_mixin import ModelBusinessMixin
 
 from EstruturaOrganizacional.atividade.models import Atividade
@@ -25,7 +25,6 @@ class Funcao(ModelBusinessMixin, BasicModel):
     )
 
     business_class = FuncaoBusiness
-    objects = Base404ExceptionManager()
 
     class Meta:
         db_table = 'funcoes'

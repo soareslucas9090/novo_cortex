@@ -1,6 +1,6 @@
 from django.db import models
 
-from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BasicModel, BaseManager
 
 from . import choices
 
@@ -77,8 +77,6 @@ class Aluno(BasicModel):
         blank=True,
         null=True,
     )
-
-    objects = Base404ExceptionManager()
 
     class Meta:
         db_table = 'alunos'

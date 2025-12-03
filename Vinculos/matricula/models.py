@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BasicModel, BaseManager
 
 
 class Matricula(BasicModel):
@@ -33,8 +33,6 @@ class Matricula(BasicModel):
         'Ativo',
         default=True,
     )
-
-    objects = Base404ExceptionManager()
 
     class Meta:
         db_table = 'matriculas'

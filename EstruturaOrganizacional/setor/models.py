@@ -1,6 +1,6 @@
 from django.db import models
 
-from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.basics.models.models import BasicModel, BaseManager
 from AppCore.core.business.business_mixin import ModelBusinessMixin
 
 from EstruturaOrganizacional.setor.business import SetorBusiness
@@ -30,7 +30,6 @@ class Setor(ModelBusinessMixin, BasicModel):
     )
 
     business_class = SetorBusiness
-    objects = Base404ExceptionManager()
 
     class Meta:
         db_table = 'setores'
