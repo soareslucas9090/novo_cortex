@@ -94,20 +94,20 @@ class BasicDeleteAPIView(GenericAPIView):
     http_method_names = ['delete']
     mensagem_sucesso = ''
 
-    def do_action_delete(self, instance, request):
+    def do_action_delete(self, request):
         raise SystemErrorException("Este método não foi implementado.")
 
     @handle_exceptions
     def delete(self, request, *args, **kwargs):
         try:
-            instance = self.get_object()
+            self.object = self.get_object()
         except Http404:
             raise NotFoundException(RESPONSE_ALGUM_DADO_NAO_FOI_ENCONTRADO)
 
         with transaction.atomic():
             try:
                 sid = transaction.savepoint()
-                self.do_action_delete(instance, request)
+                self.do_action_delete(request)
             except Exception as e:
                 transaction.savepoint_rollback(sid)
                 raise e
@@ -123,13 +123,13 @@ class BasicPutAPIView(GenericAPIView):
     http_method_names = ['put']
     mensagem_sucesso = ''
 
-    def do_action_put(self, instance, serializer_data, request):
+    def do_action_put(self, serializer_data, request):
         raise SystemErrorException("Este método não foi implementado.")
 
     @handle_exceptions
     def put(self, request, *args, **kwargs):
         try:
-            instance = self.get_object()
+            self.object = self.get_object()
         except Http404:
             raise NotFoundException(RESPONSE_ALGUM_DADO_NAO_FOI_ENCONTRADO)
 
@@ -142,7 +142,7 @@ class BasicPutAPIView(GenericAPIView):
         with transaction.atomic():
             try:
                 sid = transaction.savepoint()
-                resultado = self.do_action_put(instance, serializer_data, request)
+                resultado = self.do_action_put(serializer_data, request)
             except Exception as e:
                 transaction.savepoint_rollback(sid)
                 raise e
@@ -174,7 +174,7 @@ class BasicRetrieveAPIView(GenericAPIView):
         self.validate_retrieve(request, *args, **kwargs)
         
         try:
-            instance = self.get_object()
+            self.object = self.get_object()
         except Http404:
             raise NotFoundException(RESPONSE_ALGUM_DADO_NAO_FOI_ENCONTRADO)
 
