@@ -15,6 +15,12 @@ class Setor(BasicModel):
         'Nome',
         max_length=255,
     )
+    sigla = models.CharField(
+        'Sigla',
+        max_length=50,
+        blank=True,
+        null=True,
+    )
     is_active = models.BooleanField(
         'Ativo',
         default=True,
