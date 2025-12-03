@@ -1,9 +1,12 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
+
+from EstruturaOrganizacional.campus.business import CampusBusiness
 
 
-class Campus(BasicModel):
+class Campus(ModelBusinessMixin, BasicModel):
     """
     Representa um campus da instituição.
     
@@ -24,6 +27,7 @@ class Campus(BasicModel):
         default=True,
     )
 
+    business_class = CampusBusiness
     objects = Base404ExceptionManager()
 
     class Meta:

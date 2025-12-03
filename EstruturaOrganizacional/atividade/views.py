@@ -115,8 +115,5 @@ class AtividadeEditarView(IsAdminMixin, BasicPutAPIView):
     queryset = Atividade.objects.all()
     lookup_field = 'pk'
 
-    def do_action_put(self, instance, serializer_data, request):
-        for attr, value in serializer_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return {}
+    def do_action_put(self, serializer_data, request):
+        self.object.business.atualizar_dados(serializer_data)

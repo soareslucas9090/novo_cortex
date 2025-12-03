@@ -2,15 +2,56 @@
 
 > **Última atualização:** 2 de dezembro de 2025
 
+ATUALIZE O ARQUIVO .github/copilot-instructions.md sempre que houver mudanças significativas na estrutura, arquitetura ou convenções do projeto.
+
 ## Arquitetura em Camadas
 
-Este projeto segue uma arquitetura modular de 4 camadas bem definidas. **Cada model deve ter suas próprias classes de camadas** localizadas no mesmo app:
+Este projeto segue uma arquitetura modular de 4 camadas bem definidas. **Cada model deve ter suas próprias classes de camadas** localizadas no mesmo app.
+
+### ⚠️ PRINCÍPIO FUNDAMENTAL: Views Leves
+
+**SEMPRE prefira implementar lógica nas camadas (Business, Rules, Helpers, State) ao invés de nas views.**
+
+- **Views devem ser "burras"**: Apenas recebem dados, delegam para o Business, e retornam resposta
+- **Toda lógica de negócio** vai no `business.py`
+- **Toda validação de regras** vai no `rules.py`
+- **Toda query/utilitário** vai no `helpers.py`
+- **Toda lógica de estado** vai no `state.py`
+
+```python
+# ❌ ERRADO - Lógica na view
+def do_action_put(self, serializer_data, request):
+    for attr, value in serializer_data.items():
+        setattr(self.object, attr, value)
+    self.object.save()
+
+# ✅ CORRETO - View delega para business
+def do_action_put(self, serializer_data, request):
+    self.object.business.atualizar_dados(serializer_data)
+```
+
+### Hierarquia de Chamadas
+
+```
+View (entrada/saída)
+  └── Business (orquestração)
+        ├── Rules (validações)
+        ├── Helpers (queries/utils)
+        └── State (transições de estado)
+```
+
+**Importante:**
+
+- Views só chamam **Business**
+- Business pode chamar **Rules**, **Helpers** e **State**
+- Rules, Helpers e State **NÃO** chamam uns aos outros diretamente
 
 ### 1. **Rules** (`rules.py`) - Regras de Negócio Teóricas
 
 - **Responsabilidade**: Validar SE uma ação pode ser executada (retorna `bool` ou lança exceção)
 - **Herda de**: `ModelInstanceRules` (AppCore.core.rules)
 - **Não deve**: Conter lógica de persistência ou orquestração
+- **Chamado por**: Business (nunca diretamente pela view)
 - **Exemplo**: `UsuarioRules`, `ContaRules`
 
 ```python
@@ -28,10 +69,13 @@ class ProdutoRules(ModelInstanceRules):
 - **Responsabilidade**: Orquestrar COMO fazer operações (CRUD, workflows complexos)
 - **Herda de**: `ModelInstanceBusiness` (AppCore.core.business)
 - **Pode chamar**: Rules (validações), Helpers (queries), State (transições)
+- **Chamado por**: Views (única camada que views podem chamar diretamente)
 - **Captura exceções**: Define `exceptions_handled = (AuthorizationException, BusinessRuleException, ValidationException, NotFoundException)`
+- **Acesso**: Via `model.business.nome_do_metodo()` após configurar o mixin
 
 ```python
 from AppCore.core.business.business import ModelInstanceBusiness
+from AppCore.core.exceptions.exceptions import SystemErrorException
 
 class ProdutoBusiness(ModelInstanceBusiness):
     def criar_produto(self, **dados):
@@ -40,6 +84,15 @@ class ProdutoBusiness(ModelInstanceBusiness):
         if not regras.can_create():
             raise BusinessRuleException('Não pode criar')
         return Produto.objects.create(**dados)
+
+    def atualizar_dados(self, dados):
+        '''Método padrão para atualização de dados'''
+        try:
+            for attr, value in dados.items():
+                setattr(self.object_instance, attr, value)
+            self.object_instance.save()
+        except Exception as e:
+            raise SystemErrorException('Não foi possível atualizar os dados.')
 ```
 
 ### 3. **Helpers** (`helpers.py`) - Queries e Utilitários
@@ -47,6 +100,7 @@ class ProdutoBusiness(ModelInstanceBusiness):
 - **Responsabilidade**: Fornecer ferramentas (queries customizadas, formatações, utils)
 - **Herda de**: `ModelInstanceHelpers` (AppCore.core.helpers)
 - **Acesso**: Queries reutilizáveis, transformações de dados
+- **Chamado por**: Business (não pela view diretamente)
 
 ```python
 from AppCore.core.helpers.helpers import ModelInstanceHelpers

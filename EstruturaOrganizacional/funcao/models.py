@@ -1,11 +1,13 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
 
 from EstruturaOrganizacional.atividade.models import Atividade
+from EstruturaOrganizacional.funcao.business import FuncaoBusiness
 
 
-class Funcao(BasicModel):
+class Funcao(ModelBusinessMixin, BasicModel):
     """
     Representa uma função dentro de uma atividade.
     
@@ -22,6 +24,7 @@ class Funcao(BasicModel):
         'Descrição',
     )
 
+    business_class = FuncaoBusiness
     objects = Base404ExceptionManager()
 
     class Meta:

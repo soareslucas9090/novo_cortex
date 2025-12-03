@@ -1,9 +1,12 @@
 from django.db import models
 
 from AppCore.basics.models.models import BasicModel, Base404ExceptionManager
+from AppCore.core.business.business_mixin import ModelBusinessMixin
+
+from EstruturaOrganizacional.cargo.business import CargoBusiness
 
 
-class Cargo(BasicModel):
+class Cargo(ModelBusinessMixin, BasicModel):
     """
     Representa um cargo na instituição.
     
@@ -16,6 +19,7 @@ class Cargo(BasicModel):
         unique=True,
     )
 
+    business_class = CargoBusiness
     objects = Base404ExceptionManager()
 
     class Meta:
