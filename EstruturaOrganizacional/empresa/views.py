@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView, BasicDeleteAPIView
 
 from EstruturaOrganizacional.empresa.models import Empresa
 from EstruturaOrganizacional.empresa.serializers import (
@@ -128,3 +128,36 @@ class EmpresaEditarView(IsAdminMixin, BasicPutAPIView):
 
     def do_action_put(self, serializer_data, request):
         self.object.business.atualizar_dados(serializer_data)
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional.Empresa'],
+    summary='Deletar uma empresa',
+    description='''
+    Deleta uma empresa existente (soft delete - seta ativo=False).
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Observação:** Esta operação não remove a empresa do banco de dados,
+    apenas marca como inativa (soft delete).
+    ''',
+    responses={
+        status.HTTP_204_NO_CONTENT: {'description': 'Empresa deletada com sucesso'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Empresa não encontrada'},
+    },
+)
+class EmpresaDeletarView(IsAdminMixin, BasicDeleteAPIView):
+    """
+    View para deleção de uma empresa existente.
+    
+    Apenas administradores podem deletar empresas.
+    Realiza soft delete (seta ativo=False).
+    """
+    mensagem_sucesso = 'Empresa deletada com sucesso.'
+    queryset = Empresa.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_delete(self, request):
+        self.object.business.deletar_dados()

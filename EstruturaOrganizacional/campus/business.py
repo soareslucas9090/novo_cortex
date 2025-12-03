@@ -11,3 +11,10 @@ class CampusBusiness(ModelInstanceBusiness):
             self.object_instance.save()
         except Exception as e:
             raise SystemErrorException('Não foi possível atualizar os dados do campus.')
+
+    def deletar_dados(self):
+        try:
+            self.object_instance.ativo = False
+            self.object_instance.save()
+        except Exception as e:
+            raise SystemErrorException('Não foi possível deletar o campus.')

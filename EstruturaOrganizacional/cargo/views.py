@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView, BasicDeleteAPIView
 
 from EstruturaOrganizacional.cargo.models import Cargo
 from EstruturaOrganizacional.cargo.serializers import (
@@ -122,3 +122,34 @@ class CargoEditarView(IsAdminMixin, BasicPutAPIView):
 
     def do_action_put(self, serializer_data, request):
         self.object.business.atualizar_dados(serializer_data)
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional.Cargo'],
+    summary='Deletar um cargo',
+    description='''
+    Deleta um cargo existente do sistema.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Observação:** Esta operação remove permanentemente o cargo do banco de dados.
+    ''',
+    responses={
+        status.HTTP_204_NO_CONTENT: {'description': 'Cargo deletado com sucesso'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Cargo não encontrado'},
+    },
+)
+class CargoDeletarView(IsAdminMixin, BasicDeleteAPIView):
+    """
+    View para deleção de um cargo existente.
+    
+    Apenas administradores podem deletar cargos.
+    """
+    mensagem_sucesso = 'Cargo deletado com sucesso.'
+    queryset = Cargo.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_delete(self, request):
+        self.object.business.deletar_dados()

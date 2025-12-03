@@ -11,3 +11,9 @@ class CursoBusiness(ModelInstanceBusiness):
             self.object_instance.save()
         except Exception as e:
             raise SystemErrorException('Não foi possível atualizar os dados do curso.')
+
+    def deletar_dados(self):
+        try:
+            self.object_instance.delete()
+        except Exception as e:
+            raise SystemErrorException('Não foi possível deletar o curso.')

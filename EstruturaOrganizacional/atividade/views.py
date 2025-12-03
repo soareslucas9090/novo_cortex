@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView, BasicDeleteAPIView
 
 from EstruturaOrganizacional.atividade.models import Atividade
 from EstruturaOrganizacional.atividade.serializers import (
@@ -117,3 +117,34 @@ class AtividadeEditarView(IsAdminMixin, BasicPutAPIView):
 
     def do_action_put(self, serializer_data, request):
         self.object.business.atualizar_dados(serializer_data)
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional.Atividade'],
+    summary='Deletar uma atividade',
+    description='''
+    Deleta uma atividade existente do sistema.
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Observação:** Esta operação remove permanentemente a atividade do banco de dados.
+    ''',
+    responses={
+        status.HTTP_204_NO_CONTENT: {'description': 'Atividade deletada com sucesso'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Atividade não encontrada'},
+    },
+)
+class AtividadeDeletarView(IsAdminMixin, BasicDeleteAPIView):
+    """
+    View para deleção de uma atividade existente.
+    
+    Apenas administradores podem deletar atividades.
+    """
+    mensagem_sucesso = 'Atividade deletada com sucesso.'
+    queryset = Atividade.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_delete(self, request):
+        self.object.business.deletar_dados()

@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 
 from AppCore.basics.mixins.mixins import AllowAnyMixin, IsAdminMixin
-from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView
+from AppCore.basics.views.basic_views import BasicGetAPIView, BasicPostAPIView, BasicPutAPIView, BasicDeleteAPIView
 
 from EstruturaOrganizacional.campus.models import Campus
 from EstruturaOrganizacional.campus.serializers import (
@@ -132,3 +132,36 @@ class CampusEditarView(IsAdminMixin, BasicPutAPIView):
 
     def do_action_put(self, serializer_data, request):
         self.object.business.atualizar_dados(serializer_data)
+
+
+@extend_schema(
+    tags=['Estrutura Organizacional.Campus'],
+    summary='Deletar um campus',
+    description='''
+    Deleta um campus existente (soft delete - seta ativo=False).
+    
+    **Permissões:** Apenas administradores (is_admin ou is_superuser) podem acessar.
+    
+    **Observação:** Esta operação não remove o campus do banco de dados,
+    apenas marca como inativo (soft delete).
+    ''',
+    responses={
+        status.HTTP_204_NO_CONTENT: {'description': 'Campus deletado com sucesso'},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Não autenticado'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Sem permissão de administrador'},
+        status.HTTP_404_NOT_FOUND: {'description': 'Campus não encontrado'},
+    },
+)
+class CampusDeletarView(IsAdminMixin, BasicDeleteAPIView):
+    """
+    View para deleção de um campus existente.
+    
+    Apenas administradores podem deletar campi.
+    Realiza soft delete (seta ativo=False).
+    """
+    mensagem_sucesso = 'Campus deletado com sucesso.'
+    queryset = Campus.objects.all()
+    lookup_field = 'pk'
+
+    def do_action_delete(self, request):
+        self.object.business.deletar_dados()
